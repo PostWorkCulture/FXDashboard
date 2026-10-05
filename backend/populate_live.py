@@ -21,8 +21,7 @@ def populate_live_trades():
     symbols = ["EURUSD", "GBPUSD", "USDJPY"]
     
     while current_time < end_date:
-        # 1 or 2 trades per day max
-        if random.random() < 0.3:
+        if current_time.weekday() not in [1, 2] and random.random() < 0.3:
             symbol = random.choice(symbols)
             direction = random.choice(["Long", "Short"])
             
