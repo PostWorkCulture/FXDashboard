@@ -69,11 +69,12 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const basePath = process.env.NODE_ENV === "production" ? "/FXDashboard" : "";
         const [metricsRes, tradesRes, equityRes, breakdownsRes] = await Promise.all([
-          fetch(`http://localhost:8000/api/metrics?trade_type=${tradeType}`),
-          fetch(`http://localhost:8000/api/trades?trade_type=${tradeType}`),
-          fetch(`http://localhost:8000/api/equity-curve?trade_type=${tradeType}`),
-          fetch(`http://localhost:8000/api/breakdowns?trade_type=${tradeType}`)
+          fetch(`${basePath}/data/metrics-${tradeType}.json`),
+          fetch(`${basePath}/data/trades-${tradeType}.json`),
+          fetch(`${basePath}/data/equity-curve-${tradeType}.json`),
+          fetch(`${basePath}/data/breakdowns-${tradeType}.json`)
         ]);
 
         if (metricsRes.ok) setMetrics(await metricsRes.json());
