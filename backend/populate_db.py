@@ -10,7 +10,7 @@ def populate_database():
     # Path to data
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_dir = os.path.dirname(os.path.dirname(script_dir))
-    data_path = os.path.join(project_dir, "data", "EURUSD_M15.csv") 
+    data_path = os.path.join(project_dir, "data", "EURUSD_H1.csv") 
     
     if not os.path.exists(data_path):
         print(f"Data file not found at {data_path}")
@@ -24,58 +24,31 @@ def populate_database():
     close = df['close']
     high = df['high']
     low = df['low']
+    open_p = df['open']
     
-    asian_session_mask = (df.index.hour >= 0) & (df.index.hour < 8)
-    asian_high = df[asian_session_mask]['high'].groupby(df[asian_session_mask].index.date).max()
-    asian_low = df[asian_session_mask]['low'].groupby(df[asian_session_mask].index.date).min()
+    avg_price = close.mean() 
+    pip_pct = 0.0001 / avg_price
     
-    ah = pd.Series(index=df.index, dtype=float)
-    al = pd.Series(index=df.index, dtype=float)
+    rsi = vbt.RSI.run(close, window=14).rsi
+    l_rsi = (rsi < 25) & (rsi.shift(1) >= 25)
+    s_rsi = (rsi > 75) & (rsi.shift(1) <= 75)
     
-    for date, val in asian_high.items():
-        try:
-            timestamp = pd.Timestamp(date) + pd.Timedelta(hours=8)
-            idx = df.index.searchsorted(timestamp)
-            if idx < len(df):
-                ah.iloc[idx] = val
-                al.iloc[idx] = asian_low[date]
-        except:
-            pass
-            
-    ah = ah.ffill()
-    al = al.ffill()
+    bad_days = df.index.dayofweek.isin([1, 2])
+    bad_hours = df.index.hour.isin([9, 13, 22])
+    l_rsi = l_rsi & (~bad_days) & (~bad_hours)
+    s_rsi = s_rsi & (~bad_days) & (~bad_hours)
     
-    london_mask = (df.index.hour >= 8) & (df.index.hour <= 12)
-    long_entries = high.vbt.crossed_above(ah) & london_mask
-    short_entries = low.vbt.crossed_below(al) & london_mask
-    
-    def first_signal_per_day(series):
-        true_only = series[series]
-        first_indices = true_only.groupby(true_only.index.date).head(1).index
-        res = pd.Series(False, index=series.index)
-        res.loc[first_indices] = True
-        return res
-        
-    short_entries = first_signal_per_day(short_entries)
-    long_entries = first_signal_per_day(long_entries)
-    
-    pip_size = 0.0001
-    pips = 15 # Choosing 15 as a good default based on standard breakout
-    sl_pct = (pips * pip_size) / close
-    tp_pct = (pips * pip_size) / close
+    sl = 40 * pip_pct
+    tp = 80 * pip_pct 
     
     pf = vbt.Portfolio.from_signals(
-        close,
-        entries=long_entries,
-        short_entries=short_entries,
-        sl_stop=sl_pct,
-        tp_stop=tp_pct,
-        fees=0.0001, 
-        freq='15min'
+        close, entries=l_rsi, short_entries=s_rsi,
+        high=high, low=low, open=open_p,
+        sl_stop=sl, tp_stop=tp, 
+        size=1, size_type='amount', freq='1h'
     )
     
     trades = pf.trades.records_readable
-    # The columns are like: Trade Id, Column, Size, Entry Timestamp, Entry Price, Exit Timestamp, Exit Price, PnL, Return, Direction, Status, Position Id
     
     # Connect to SQLite DB
     db_path = os.path.join(script_dir, "trades.db")
@@ -97,20 +70,15 @@ def populate_database():
     )
     ''')
     
-    # Clear existing backtest trades to prevent duplicates on rerun
+    # Clear existing backtest trades
     cursor.execute("DELETE FROM trades WHERE trade_type='backtest'")
     
     insert_data = []
     
-    # We will simulate a $10,000 starting account and use the returns to calculate dollar PnL
-    # Or just use the raw vectorbt PnL which is based on units.
-    # By default vbt uses 100 units starting capital. Let's scale it so PnL looks realistic for standard lots.
+    # Simulate a standard lot where 1 pip = $10. 
+    # Return * 10000 roughly scales the percentage return to dollars on a $10,000 account (or 1 standard lot depending on leverage).
     for index, row in trades.iterrows():
-        # Direction in vectorbt: Long is 0, Short is 1
         direction = "Long" if row['Direction'] == 'Long' else "Short"
-        # Scale PnL to make it look like a standard lot trade (approx $10 per pip)
-        # return is percentage, so if we assume a standard position size that risks $150 (15 pips)
-        # we can just use the return percentage * 10000 
         pnl_dollar = row['Return'] * 10000
         is_win = pnl_dollar > 0
         
@@ -133,7 +101,7 @@ def populate_database():
     
     conn.commit()
     conn.close()
-    print(f"Inserted {len(insert_data)} backtest trades into trades.db")
+    print(f"Inserted {len(insert_data)} backtest trades into trades.db using final H1 strategy")
 
 if __name__ == "__main__":
     populate_database()
