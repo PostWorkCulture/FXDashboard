@@ -70,7 +70,7 @@ def export_data(trade_type):
     days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
     
     for t in trades:
-        dt = datetime.datetime.fromisoformat(t["exit_time"])
+        dt = datetime.datetime.fromisoformat(t["entry_time"])
         dow_pnl[dt.weekday()] += t["pnl"]
         
     dow_breakdown = [{"name": days[k], "pnl": round(v, 2)} for k, v in dow_pnl.items() if v != 0]
