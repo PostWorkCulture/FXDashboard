@@ -43,6 +43,18 @@ export function Header() {
             </button>
           </div>
 
+          {/* Pair Filter */}
+          <select 
+            className="bg-zinc-900 border border-zinc-800 text-sm rounded-lg px-3 py-1.5 text-zinc-300 outline-none focus:border-zinc-600 cursor-pointer h-[34px]"
+            value={filters.symbol}
+            onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
+          >
+            <option value="All">All Pairs</option>
+            <option value="EURUSD">EURUSD</option>
+            <option value="GBPUSD">GBPUSD</option>
+            <option value="AUDUSD">AUDUSD</option>
+          </select>
+
           {/* Clear active day filter if any */}
           {filters.dayOfWeek !== null && (
             <button 

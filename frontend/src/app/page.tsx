@@ -21,7 +21,8 @@ import {
   Bar,
   PieChart,
   Pie,
-  Cell
+  Cell,
+  ReferenceLine
 } from "recharts";
 
 const COLORS = ['#22c55e', '#ec4899', '#3b82f6', '#f59e0b', '#8b5cf6'];
@@ -186,11 +187,17 @@ export default function Dashboard() {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  domain={['auto', 'auto']}
+                  domain={[minEq => Math.min(minEq, 10000), maxEq => Math.max(maxEq, 10000)]}
                   tickFormatter={(value) => `$${value}`}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                />
+                <ReferenceLine 
+                  y={10000} 
+                  stroke="#52525b" 
+                  strokeDasharray="3 3" 
+                  label={{ position: 'insideTopLeft', value: 'Starting Balance', fill: '#71717a', fontSize: 12 }} 
                 />
                 <Area 
                   type="monotone" 
@@ -198,7 +205,8 @@ export default function Dashboard() {
                   stroke="url(#strokeEquity)" 
                   strokeWidth={2}
                   fillOpacity={1} 
-                  fill="url(#colorEquity)" 
+                  fill="url(#colorEquity)"
+                  baseValue="dataMin"
                 />
               </AreaChart>
             </ResponsiveContainer>
