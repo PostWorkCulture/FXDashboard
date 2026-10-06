@@ -75,7 +75,24 @@ export default function ReportsPage() {
       id: t.id
     })).filter(t => t.mfe !== 0 || t.mae !== 0);
 
-    return { drawdownCurve, hourlyBreakdown, winRateData, scatterData };
+    // Trades Per Month
+    const monthlyMap = new Map<string, number>();
+    filteredTrades.forEach(t => {
+      const monthStr = t.entry_time.substring(0, 7); // YYYY-MM
+      monthlyMap.set(monthStr, (monthlyMap.get(monthStr) || 0) + 1);
+    });
+    const tradesPerMonth = Array.from(monthlyMap.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([month, count]) => {
+        // format YYYY-MM to short month name (e.g. Sep 26)
+        const d = new Date(month + "-01");
+        return {
+          month: d.toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
+          trades: count
+        };
+      });
+
+    return { drawdownCurve, hourlyBreakdown, winRateData, scatterData, tradesPerMonth };
   }, [filteredTrades]);
 
   if (isLoading) {
@@ -88,29 +105,22 @@ export default function ReportsPage() {
 
   return (
     <div className="space-y-6 pb-8">
-      
-      {/* Drawdown Chart */}
+
+      {/* Trades Per Month Chart */}
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-6">Drawdown (%)</h2>
-        <div className="h-80 w-full">
+        <h2 className="text-lg font-semibold mb-6">Trades Taken per Month</h2>
+        <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.drawdownCurve} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorDd" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
+            <BarChart data={data.tradesPerMonth} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="date" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
-              <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
+              <XAxis dataKey="month" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                itemStyle={{ color: '#ec4899' }}
-                formatter={(value: any) => `${value}%`}
+                cursor={{fill: '#27272a'}}
               />
-              <Area type="monotone" dataKey="drawdown" stroke="#ec4899" strokeWidth={2} fillOpacity={1} fill="url(#colorDd)" />
-            </AreaChart>
+              <Bar dataKey="trades" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+            </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
@@ -123,8 +133,8 @@ export default function ReportsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.hourlyBreakdown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                <XAxis dataKey="hour" stroke="#52525b" fontSize={10} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                <XAxis dataKey="hour" stroke="#d4d4d8" fontSize={10} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                   cursor={{fill: '#27272a'}}
@@ -147,8 +157,8 @@ export default function ReportsPage() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.winRateData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
-                <XAxis type="number" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
-                <YAxis dataKey="name" type="category" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} width={60} />
+                <XAxis type="number" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
+                <YAxis dataKey="name" type="category" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} width={60} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                   cursor={{fill: '#27272a'}}
@@ -164,14 +174,15 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm mt-6">
+      {/* Execution Efficiency */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold mb-6">Execution Efficiency (MFE vs Net P&L)</h2>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-              <XAxis type="number" dataKey="mfe" name="MFE (pips)" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis type="number" dataKey="pnl" name="PnL ($)" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
+              <XAxis type="number" dataKey="mfe" name="MFE (pips)" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis type="number" dataKey="pnl" name="PnL ($)" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
               <ZAxis type="number" range={[40, 40]} />
               <Tooltip 
                 cursor={{ strokeDasharray: '3 3', stroke: '#52525b' }} 
@@ -180,6 +191,32 @@ export default function ReportsPage() {
               />
               <Scatter name="Trades" data={data.scatterData} fill="#3b82f6" fillOpacity={0.6} />
             </ScatterChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Drawdown Chart */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
+        <h2 className="text-lg font-semibold mb-6">Drawdown (%)</h2>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data.drawdownCurve} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorDd" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+              <XAxis dataKey="date" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
+              <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
+              <Tooltip 
+                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                itemStyle={{ color: '#ec4899' }}
+                formatter={(value: any) => `${value}%`}
+              />
+              <Area type="monotone" dataKey="drawdown" stroke="#ec4899" strokeWidth={2} fillOpacity={1} fill="url(#colorDd)" />
+            </AreaChart>
           </ResponsiveContainer>
         </div>
       </div>

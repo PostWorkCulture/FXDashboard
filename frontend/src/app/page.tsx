@@ -172,14 +172,14 @@ export default function Dashboard() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis 
                   dataKey="date" 
-                  stroke="#52525b" 
+                  stroke="#d4d4d8" 
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
                   minTickGap={30}
                 />
                 <YAxis 
-                  stroke="#52525b" 
+                  stroke="#d4d4d8" 
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
@@ -265,8 +265,8 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={dowBreakdown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} onClick={handleBarClick}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis dataKey="name" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                  <XAxis dataKey="name" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                     cursor={{fill: '#27272a'}}
