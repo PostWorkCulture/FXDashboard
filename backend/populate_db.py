@@ -17,7 +17,8 @@ def populate_database():
         return
 
     df = pd.read_csv(data_path, index_col='time', parse_dates=True)
-    df = df.loc[:'2024-12-31']
+    # Include data up to the latest available (2026)
+    df = df.loc['2023-01-01':]
     
     close = df['close']
     high = df['high']

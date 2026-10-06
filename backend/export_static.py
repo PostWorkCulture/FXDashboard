@@ -34,8 +34,8 @@ def export_ohlcv():
         return []
         
     df = pd.read_csv(data_path, index_col='time', parse_dates=True)
-    # Filter for the backtest period to keep size manageable
-    df = df.loc['2023-01-01':'2024-12-31']
+    # Filter for the backtest period to keep size manageable, but include up to latest
+    df = df.loc['2023-01-01':]
     
     # lightweight-charts expects: { time: string, open: number, high: number, low: number, close: number }
     # time must be in YYYY-MM-DD or unix timestamp
