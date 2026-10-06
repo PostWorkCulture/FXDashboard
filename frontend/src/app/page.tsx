@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { useData } from "@/lib/data-context";
 import { 
   BarChart3, 
@@ -206,6 +207,22 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Trades Link */}
+      <Link href="/trades" className="group bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform">
+            <Wallet size={24} />
+          </div>
+          <div>
+            <h3 className="font-semibold text-white">Trades</h3>
+            <p className="text-sm text-zinc-400">View detailed trade log and execution data</p>
+          </div>
+        </div>
+        <div className="text-zinc-500 group-hover:text-white transition-colors px-4">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </div>
+      </Link>
 
       {/* Breakdowns Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
