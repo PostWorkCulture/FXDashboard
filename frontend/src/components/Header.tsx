@@ -44,16 +44,25 @@ export function Header() {
           </div>
 
           {/* Pair Filter */}
-          <select 
-            className="bg-zinc-900 border border-zinc-800 text-sm rounded-lg px-3 py-1.5 text-zinc-300 outline-none focus:border-zinc-600 cursor-pointer h-[34px]"
-            value={filters.symbol}
-            onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
-          >
-            <option value="All">All Pairs</option>
-            <option value="EURUSD">EURUSD</option>
-            <option value="GBPUSD">GBPUSD</option>
-            <option value="AUDUSD">AUDUSD</option>
-          </select>
+          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-2 h-[34px]">
+            {filters.symbol !== "All" && (
+              <img 
+                src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/${filters.symbol.toLowerCase()}.jpg`} 
+                alt={filters.symbol} 
+                className="w-5 h-5 rounded-md object-cover"
+              />
+            )}
+            <select 
+              className="bg-transparent text-sm text-zinc-300 outline-none cursor-pointer border-none py-1.5"
+              value={filters.symbol}
+              onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
+            >
+              <option value="All">All Pairs</option>
+              <option value="EURUSD">EURUSD</option>
+              <option value="GBPUSD">GBPUSD</option>
+              <option value="AUDUSD">AUDUSD</option>
+            </select>
+          </div>
 
           {/* Clear active day filter if any */}
           {filters.dayOfWeek !== null && (
