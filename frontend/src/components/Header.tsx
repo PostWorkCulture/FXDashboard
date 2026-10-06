@@ -45,7 +45,13 @@ export function Header() {
 
           {/* Pair Filter */}
           <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-lg px-2 h-[34px]">
-            {filters.symbol !== "All" && (
+            {filters.symbol === "All" ? (
+              <div className="flex -space-x-2">
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/eurusd.jpg`} className="w-5 h-5 rounded-full object-cover border border-zinc-900 relative z-30" alt="EURUSD" />
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/gbpusd.jpg`} className="w-5 h-5 rounded-full object-cover border border-zinc-900 relative z-20" alt="GBPUSD" />
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/audusd.jpg`} className="w-5 h-5 rounded-full object-cover border border-zinc-900 relative z-10" alt="AUDUSD" />
+              </div>
+            ) : (
               <img 
                 src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/${filters.symbol.toLowerCase()}.jpg`} 
                 alt={filters.symbol} 

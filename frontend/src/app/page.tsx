@@ -202,7 +202,7 @@ export default function Dashboard() {
                   strokeWidth={2}
                   fillOpacity={1} 
                   fill="url(#colorEquity)"
-                  baseValue="dataMin"
+                  baseValue={10000}
                 />
               </AreaChart>
             </ResponsiveContainer>
