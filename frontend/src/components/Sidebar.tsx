@@ -6,7 +6,7 @@ import {
   LayoutDashboard, 
   Wallet, 
   PieChart as PieChartIcon, 
-  Settings,
+  
   TrendingUp,
   Calendar,
   Globe
@@ -22,7 +22,7 @@ export function Sidebar() {
           <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
             <TrendingUp className="w-5 h-5 text-zinc-950" />
           </div>
-          FXDashboard
+          PWC FX
         </Link>
       </div>
       
@@ -34,10 +34,6 @@ export function Sidebar() {
         <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Detailed Reports" active={pathname === "/reports"} />
         <NavItem href="/news" icon={<Globe size={20} />} label="News Calendar" active={pathname === "/news"} />
       </nav>
-
-      <div className="p-4 border-t border-zinc-800">
-        <NavItem href="#" icon={<Settings size={20} />} label="Settings" />
-      </div>
     </aside>
   );
 }

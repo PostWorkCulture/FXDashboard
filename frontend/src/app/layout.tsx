@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Trading Dashboard",
-  description: "TradeZella clone for algorithmic trading analysis",
+  title: "PWC FX",
+  description: "Trading journal and analytics dashboard",
 };
 
 export default function RootLayout({

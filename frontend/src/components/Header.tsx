@@ -1,7 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
-import { Bell, FilterX } from "lucide-react";
+import { FilterX } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export function Header() {
@@ -71,12 +71,6 @@ export function Header() {
         </div>
       </div>
 
-      <div className="flex items-center gap-4 shrink-0">
-        <button className="p-2 hover:bg-zinc-800 rounded-full transition-colors">
-          <Bell size={20} className="text-zinc-400" />
-        </button>
-        <div className="w-8 h-8 bg-zinc-700 rounded-full border border-zinc-600 shrink-0"></div>
-      </div>
     </header>
   );
 }
