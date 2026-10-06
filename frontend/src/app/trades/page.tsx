@@ -6,7 +6,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ExecutionChart } from "@/components/ExecutionChart";
 
 export default function TradesPage() {
-  const { filteredTrades, ohlcv, isLoading } = useData();
+  const { filteredTrades, isLoading, filters, setFilters } = useData();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTrade, setSelectedTrade] = useState<any>(null);
   const itemsPerPage = 20;
@@ -15,8 +15,8 @@ export default function TradesPage() {
     return <div className="flex h-full items-center justify-center text-zinc-500">Loading trades...</div>;
   }
 
-  // Sort descending by exit time
-  const sortedTrades = [...filteredTrades].sort((a, b) => new Date(b.exit_time).getTime() - new Date(a.exit_time).getTime());
+  // Sort descending by entry time (newest first)
+  const sortedTrades = [...filteredTrades].sort((a, b) => new Date(b.entry_time).getTime() - new Date(a.entry_time).getTime());
 
   const totalPages = Math.ceil(sortedTrades.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -34,14 +34,57 @@ export default function TradesPage() {
             <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-zinc-400 uppercase bg-zinc-900/50 border-b border-zinc-800">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Trade ID</th>
-                  <th className="px-6 py-4 font-medium">Symbol</th>
-                  <th className="px-6 py-4 font-medium">Side</th>
-                  <th className="px-6 py-4 font-medium">Entry Date</th>
-                  <th className="px-6 py-4 font-medium">Exit Date</th>
-                  <th className="px-6 py-4 font-medium">Entry Price</th>
-                  <th className="px-6 py-4 font-medium">Exit Price</th>
-                  <th className="px-6 py-4 font-medium text-right">P&L</th>
+                  <th className="px-6 py-4 font-medium align-top">Trade ID</th>
+                  <th className="px-6 py-4 font-medium">
+                    <div className="flex flex-col gap-2">
+                      <span>Symbol</span>
+                      <select 
+                        className="bg-zinc-800 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300 outline-none w-24"
+                        value={filters.symbol}
+                        onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
+                      >
+                        <option value="All">All</option>
+                        <option value="EURUSD">EURUSD</option>
+                        <option value="GBPUSD">GBPUSD</option>
+                        <option value="AUDUSD">AUDUSD</option>
+                      </select>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 font-medium">
+                    <div className="flex flex-col gap-2">
+                      <span>Side</span>
+                      <select 
+                        className="bg-zinc-800 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300 outline-none w-24"
+                        value={filters.direction}
+                        onChange={(e) => setFilters(f => ({ ...f, direction: e.target.value }))}
+                      >
+                        <option value="All">All</option>
+                        <option value="Long">Long</option>
+                        <option value="Short">Short</option>
+                      </select>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 font-medium">
+                    <div className="flex flex-col gap-2">
+                      <span>Entry Date</span>
+                      <select 
+                        className="bg-zinc-800 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300 outline-none w-28"
+                        value={filters.dateRange}
+                        onChange={(e) => setFilters(f => ({ ...f, dateRange: e.target.value as any }))}
+                      >
+                        <option value="All">All</option>
+                        <option value="Today">Today</option>
+                        <option value="This Week">This Week</option>
+                        <option value="This Month">This Month</option>
+                        <option value="Last Month">Last Month</option>
+                        <option value="This Year">This Year</option>
+                      </select>
+                    </div>
+                  </th>
+                  <th className="px-6 py-4 font-medium align-top">Exit Date</th>
+                  <th className="px-6 py-4 font-medium align-top">Entry Price</th>
+                  <th className="px-6 py-4 font-medium align-top">Exit Price</th>
+                  <th className="px-6 py-4 font-medium text-right align-top">P&L</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800">
@@ -123,7 +166,7 @@ export default function TradesPage() {
             
             {/* Chart Area */}
             <div className="w-full h-64 bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
-              <ExecutionChart trade={selectedTrade} ohlcv={ohlcv} />
+              <ExecutionChart trade={selectedTrade} />
             </div>
 
             <div className="flex justify-between items-center pb-4 border-b border-zinc-800">

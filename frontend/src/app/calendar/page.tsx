@@ -19,7 +19,7 @@ import {
 
 export default function CalendarPage() {
   const { filteredTrades, isLoading } = useData();
-  const [currentDate, setCurrentDate] = useState(new Date("2024-12-01")); // Default to end of backtest, or new Date() if live
+  const [currentDate, setCurrentDate] = useState(new Date()); 
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));

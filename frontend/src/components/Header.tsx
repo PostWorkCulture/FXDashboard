@@ -43,43 +43,6 @@ export function Header() {
             </button>
           </div>
 
-          {/* Direction Filter */}
-          <select 
-            className="bg-zinc-900 border border-zinc-800 text-sm rounded-lg px-3 py-2 text-zinc-300 outline-none focus:border-zinc-600 cursor-pointer"
-            value={filters.direction}
-            onChange={(e) => setFilters(f => ({ ...f, direction: e.target.value }))}
-          >
-            <option value="All">All Sides</option>
-            <option value="Long">Long Only</option>
-            <option value="Short">Short Only</option>
-          </select>
-          
-          {/* Symbol Filter */}
-          <select 
-            className="bg-zinc-900 border border-zinc-800 text-sm rounded-lg px-3 py-2 text-zinc-300 outline-none focus:border-zinc-600 cursor-pointer"
-            value={filters.symbol}
-            onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
-          >
-            <option value="All">All Symbols</option>
-            <option value="EURUSD">EURUSD</option>
-            <option value="GBPUSD">GBPUSD</option>
-          </select>
-
-          {/* Date Filter (Simple) */}
-          <input 
-            type="date" 
-            className="bg-zinc-900 border border-zinc-800 text-sm rounded-lg px-3 py-2 text-zinc-300 outline-none focus:border-zinc-600 cursor-pointer [color-scheme:dark]"
-            value={filters.dateRange.from || ""}
-            onChange={(e) => setFilters(f => ({ ...f, dateRange: { ...f.dateRange, from: e.target.value || null } }))}
-          />
-          <span className="text-zinc-500">-</span>
-          <input 
-            type="date" 
-            className="bg-zinc-900 border border-zinc-800 text-sm rounded-lg px-3 py-2 text-zinc-300 outline-none focus:border-zinc-600 cursor-pointer [color-scheme:dark]"
-            value={filters.dateRange.to || ""}
-            onChange={(e) => setFilters(f => ({ ...f, dateRange: { ...f.dateRange, to: e.target.value || null } }))}
-          />
-
           {/* Clear active day filter if any */}
           {filters.dayOfWeek !== null && (
             <button 

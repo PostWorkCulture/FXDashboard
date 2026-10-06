@@ -27,7 +27,7 @@ interface FilterState {
   symbol: string; // "All" or specific symbol
   direction: string; // "All", "Long", "Short"
   dayOfWeek: number | null; // null for all, 0-6 for Mon-Sun
-  dateRange: { from: string | null; to: string | null };
+  dateRange: "All" | "Today" | "This Week" | "This Month" | "Last Month" | "This Year";
 }
 
 interface DataContextType {
@@ -47,7 +47,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     symbol: "All",
     direction: "All",
     dayOfWeek: null,
-    dateRange: { from: null, to: null }
+    dateRange: "All"
   });
   
   const [rawTrades, setRawTrades] = useState<Trade[]>([]);
@@ -108,17 +108,29 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       }
       
       // Date Range filter
-      if (filters.dateRange.from) {
+      if (filters.dateRange !== "All") {
         const tDate = new Date(t.entry_time.replace(" ", "T"));
-        const fromDate = new Date(filters.dateRange.from);
-        if (tDate < fromDate) return false;
-      }
-      if (filters.dateRange.to) {
-        const tDate = new Date(t.entry_time.replace(" ", "T"));
-        const toDate = new Date(filters.dateRange.to);
-        // Add 1 day to 'to' date to include the whole day
-        toDate.setDate(toDate.getDate() + 1);
-        if (tDate >= toDate) return false;
+        const now = new Date();
+        
+        if (filters.dateRange === "Today") {
+          if (tDate.toDateString() !== now.toDateString()) return false;
+        } else if (filters.dateRange === "This Week") {
+          const startOfWeek = new Date(now);
+          startOfWeek.setDate(now.getDate() - now.getDay());
+          if (tDate < startOfWeek) return false;
+        } else if (filters.dateRange === "This Month") {
+          if (tDate.getMonth() !== now.getMonth() || tDate.getFullYear() !== now.getFullYear()) return false;
+        } else if (filters.dateRange === "Last Month") {
+          let prevMonth = now.getMonth() - 1;
+          let prevYear = now.getFullYear();
+          if (prevMonth < 0) {
+            prevMonth = 11;
+            prevYear -= 1;
+          }
+          if (tDate.getMonth() !== prevMonth || tDate.getFullYear() !== prevYear) return false;
+        } else if (filters.dateRange === "This Year") {
+          if (tDate.getFullYear() !== now.getFullYear()) return false;
+        }
       }
       
       return true;

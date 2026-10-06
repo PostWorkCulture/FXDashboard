@@ -1,17 +1,35 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createChart, ColorType, IChartApi, CandlestickSeries } from "lightweight-charts";
 import { createSeriesMarkers } from "lightweight-charts";
 
 interface ExecutionChartProps {
   trade: any;
-  ohlcv: any[];
 }
 
-export function ExecutionChart({ trade, ohlcv }: ExecutionChartProps) {
+export function ExecutionChart({ trade }: ExecutionChartProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
+  const [ohlcv, setOhlcv] = useState<any[]>([]);
+
+  // Fetch OHLCV for the specific symbol
+  useEffect(() => {
+    const fetchOhlcv = async () => {
+      const basePath = process.env.NODE_ENV === "production" ? "/FXDashboard" : "";
+      const symbolFile = trade.symbol.toLowerCase();
+      try {
+        const res = await fetch(`${basePath}/data/${symbolFile}_h1_candles.json`);
+        if (res.ok) {
+          const data = await res.json();
+          setOhlcv(data);
+        }
+      } catch (err) {
+        console.error("Failed to load OHLCV data", err);
+      }
+    };
+    fetchOhlcv();
+  }, [trade.symbol]);
 
   useEffect(() => {
     if (!chartContainerRef.current || ohlcv.length === 0) return;
