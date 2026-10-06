@@ -6,7 +6,8 @@ import {
   BarChart3, 
   Target, 
   Activity,
-  Wallet
+  Wallet,
+  ClipboardCheck
 } from "lucide-react";
 import {
   AreaChart,
@@ -119,7 +120,7 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 pb-8">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         <MetricCard 
           title="Net P&L" 
           value={`$${metrics.total_pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
@@ -135,6 +136,12 @@ export default function Dashboard() {
           title="Profit Factor" 
           value={metrics.profit_factor.toFixed(2)}
           icon={<Activity className="text-purple-500" />}
+        />
+        <MetricCard 
+          title="Discipline Score" 
+          value="100%"
+          icon={<ClipboardCheck className="text-yellow-500" />}
+          trend="positive"
         />
         <MetricCard 
           title="Total Trades" 

@@ -35,6 +35,7 @@ interface DataContextType {
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   rawTrades: Trade[];
   filteredTrades: Trade[];
+  ohlcv: any[];
   isLoading: boolean;
 }
 
@@ -50,6 +51,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   });
   
   const [rawTrades, setRawTrades] = useState<Trade[]>([]);
+  const [ohlcv, setOhlcv] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch raw trades based on tradeType toggle
@@ -58,15 +60,25 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       setIsLoading(true);
       try {
         const basePath = process.env.NODE_ENV === "production" ? "/FXDashboard" : "";
-        const res = await fetch(`${basePath}/data/raw_trades-${filters.tradeType}.json`);
-        if (res.ok) {
-          const data = await res.json();
+        
+        const [tradesRes, ohlcvRes] = await Promise.all([
+          fetch(`${basePath}/data/raw_trades-${filters.tradeType}.json`),
+          fetch(`${basePath}/data/eurusd_h1_candles.json`)
+        ]);
+
+        if (tradesRes.ok) {
+          const data = await tradesRes.json();
           setRawTrades(data);
         } else {
           setRawTrades([]);
         }
+
+        if (ohlcvRes.ok) {
+          const candleData = await ohlcvRes.json();
+          setOhlcv(candleData);
+        }
       } catch (err) {
-        console.error("Failed to load trades", err);
+        console.error("Failed to load data", err);
         setRawTrades([]);
       } finally {
         setIsLoading(false);
@@ -114,7 +126,7 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   }, [rawTrades, filters]);
 
   return (
-    <DataContext.Provider value={{ filters, setFilters, rawTrades, filteredTrades, isLoading }}>
+    <DataContext.Provider value={{ filters, setFilters, rawTrades, filteredTrades, ohlcv, isLoading }}>
       {children}
     </DataContext.Provider>
   );

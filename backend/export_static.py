@@ -23,6 +23,35 @@ def export_data(trade_type):
         "raw_trades": trades_list
     }
 
+def export_ohlcv():
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    dashboard_dir = os.path.dirname(script_dir)
+    project_dir = os.path.dirname(dashboard_dir)
+    data_path = os.path.join(project_dir, "data", "EURUSD_H1.csv")
+    
+    import pandas as pd
+    if not os.path.exists(data_path):
+        return []
+        
+    df = pd.read_csv(data_path, index_col='time', parse_dates=True)
+    # Filter for the backtest period to keep size manageable
+    df = df.loc['2023-01-01':'2024-12-31']
+    
+    # lightweight-charts expects: { time: string, open: number, high: number, low: number, close: number }
+    # time must be in YYYY-MM-DD or unix timestamp
+    ohlcv = []
+    for timestamp, row in df.iterrows():
+        # lightweight-charts time (unix timestamp in seconds)
+        unix_time = int(timestamp.timestamp())
+        ohlcv.append({
+            "time": unix_time,
+            "open": round(row['open'], 5),
+            "high": round(row['high'], 5),
+            "low": round(row['low'], 5),
+            "close": round(row['close'], 5)
+        })
+    return ohlcv
+
 def main():
     script_dir = os.path.dirname(os.path.abspath(__file__))
     public_dir = os.path.join(os.path.dirname(script_dir), "frontend", "public", "data")
@@ -35,7 +64,12 @@ def main():
             with open(file_path, "w") as f:
                 json.dump(payload, f)
                 
-    print("Raw static trades exported to frontend/public/data/")
+    # Export OHLCV
+    ohlcv_data = export_ohlcv()
+    with open(os.path.join(public_dir, "eurusd_h1_candles.json"), "w") as f:
+        json.dump(ohlcv_data, f)
+                
+    print("Raw static trades and OHLCV exported to frontend/public/data/")
 
 if __name__ == "__main__":
     main()

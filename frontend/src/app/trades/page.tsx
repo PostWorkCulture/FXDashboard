@@ -3,9 +3,10 @@
 import { useData } from "@/lib/data-context";
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ExecutionChart } from "@/components/ExecutionChart";
 
 export default function TradesPage() {
-  const { filteredTrades, isLoading } = useData();
+  const { filteredTrades, ohlcv, isLoading } = useData();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTrade, setSelectedTrade] = useState<any>(null);
   const itemsPerPage = 20;
@@ -107,7 +108,7 @@ export default function TradesPage() {
 
       {/* Slide-out / Side Panel for Selected Trade */}
       {selectedTrade && (
-        <div className="w-full xl:w-96 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm flex flex-col overflow-hidden transition-all duration-300">
+        <div className="w-full xl:w-[600px] shrink-0 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm flex flex-col overflow-hidden transition-all duration-300">
           <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
             <div>
               <h3 className="text-lg font-bold text-white">Trade #{selectedTrade.id}</h3>
@@ -119,6 +120,12 @@ export default function TradesPage() {
           </div>
           
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
+            
+            {/* Chart Area */}
+            <div className="w-full h-64 bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
+              <ExecutionChart trade={selectedTrade} ohlcv={ohlcv} />
+            </div>
+
             <div className="flex justify-between items-center pb-4 border-b border-zinc-800">
               <span className={`px-3 py-1 rounded-md text-sm font-semibold ${
                 selectedTrade.direction === "Long" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
@@ -164,7 +171,13 @@ export default function TradesPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 block">Setup / Playbook</label>
+                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 flex items-center justify-between">
+                  <span>Setup / Playbook</span>
+                  <div className="flex items-center gap-2">
+                    <input type="checkbox" className="rounded bg-zinc-800 border-zinc-700" defaultChecked />
+                    <span className="text-zinc-400 normal-case">Rules Followed</span>
+                  </div>
+                </label>
                 <div className="bg-zinc-950 border border-zinc-800 rounded-md p-3 text-sm text-white">
                   {selectedTrade.setup || "No setup tagged"}
                 </div>
