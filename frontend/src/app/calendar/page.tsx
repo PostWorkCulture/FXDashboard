@@ -90,7 +90,7 @@ export default function CalendarPage() {
             let bgColor = "bg-zinc-900";
             if (data) {
               if (data.pnl > 0) bgColor = "bg-green-500/10 hover:bg-green-500/20";
-              else if (data.pnl < 0) bgColor = "bg-red-500/10 hover:bg-red-500/20";
+              else if (data.pnl < 0) bgColor = "bg-pink-500/10 hover:bg-pink-500/20";
               else bgColor = "bg-zinc-800/50 hover:bg-zinc-800";
             } else {
               bgColor = "bg-zinc-900 hover:bg-zinc-800/50";
@@ -111,7 +111,7 @@ export default function CalendarPage() {
                 </div>
                 {data && (
                   <div className="mt-auto space-y-1">
-                    <div className={`text-sm font-bold ${data.pnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+                    <div className={`text-sm font-bold ${data.pnl >= 0 ? "text-green-500" : "text-pink-500"}`}>
                       {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
                     </div>
                     <div className="text-xs text-zinc-500 flex justify-between">
@@ -146,13 +146,13 @@ export default function CalendarPage() {
                   <div className="flex justify-between items-start">
                     <div>
                       <span className={`px-2 py-1 rounded text-xs font-semibold mr-2 ${
-                        trade.direction === "Long" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                        trade.direction === "Long" ? "bg-green-500/20 text-green-400" : "bg-pink-500/20 text-pink-400"
                       }`}>
                         {trade.direction}
                       </span>
                       <span className="font-bold">{trade.symbol}</span>
                     </div>
-                    <div className={`font-mono font-bold ${trade.pnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+                    <div className={`font-mono font-bold ${trade.pnl >= 0 ? "text-green-500" : "text-pink-500"}`}>
                       {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                     </div>
                   </div>

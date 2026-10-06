@@ -70,10 +70,10 @@ export function ExecutionChart({ trade }: ExecutionChartProps) {
 
     const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#22c55e',
-      downColor: '#ef4444',
+      downColor: '#ec4899',
       borderVisible: false,
       wickUpColor: '#22c55e',
-      wickDownColor: '#ef4444',
+      wickDownColor: '#ec4899',
     });
 
     candlestickSeries.setData(chartData);
@@ -90,7 +90,7 @@ export function ExecutionChart({ trade }: ExecutionChartProps) {
       {
         time: exitUnix as any,
         position: trade.direction === "Long" ? 'aboveBar' : 'belowBar',
-        color: trade.pnl >= 0 ? '#22c55e' : '#ef4444',
+        color: trade.pnl >= 0 ? '#22c55e' : '#ec4899',
         shape: 'circle',
         text: 'Exit',
       }
@@ -125,7 +125,7 @@ export function ExecutionChart({ trade }: ExecutionChartProps) {
     if (trade.mae_pips > 0) {
       candlestickSeries.createPriceLine({
         price: maePrice,
-        color: '#ef4444',
+        color: '#ec4899',
         lineWidth: 1,
         lineStyle: 3,
         axisLabelVisible: true,

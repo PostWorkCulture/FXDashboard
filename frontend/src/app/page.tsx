@@ -24,7 +24,7 @@ import {
   Cell
 } from "recharts";
 
-const COLORS = ['#22c55e', '#ef4444', '#3b82f6', '#f59e0b', '#8b5cf6'];
+const COLORS = ['#22c55e', '#ec4899', '#3b82f6', '#f59e0b', '#8b5cf6'];
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function Dashboard() {
@@ -60,12 +60,14 @@ export default function Dashboard() {
       // Let's use Win/Loss counts for the pie to avoid negative slice issues, or just Profit vs Loss.
     ];
 
-    // Better Pie: Long vs Short Trade Volume (count)
-    const long_count = filteredTrades.filter(t => t.direction === "Long").length;
-    const short_count = filteredTrades.filter(t => t.direction === "Short").length;
-    const sideCountBreakdown = [
-      { name: "Long", value: long_count },
-      { name: "Short", value: short_count }
+    // Win Rate by Side (%)
+    const long_trades = filteredTrades.filter(t => t.direction === "Long");
+    const short_trades = filteredTrades.filter(t => t.direction === "Short");
+    const long_win_rate = long_trades.length > 0 ? (long_trades.filter(t => t.pnl > 0).length / long_trades.length) * 100 : 0;
+    const short_win_rate = short_trades.length > 0 ? (short_trades.filter(t => t.pnl > 0).length / short_trades.length) * 100 : 0;
+    const sideWinRateBreakdown = [
+      { name: "Long", value: Math.round(long_win_rate), fill: "#22c55e" },
+      { name: "Short", value: Math.round(short_win_rate), fill: "#ec4899" }
     ];
 
     // Day of Week PNL
@@ -80,10 +82,23 @@ export default function Dashboard() {
     // We want to return all 7 days so they can be clicked
     const dowBreakdown = dowPnl.map((pnl, i) => ({ name: DAYS[i], pnl: pnl, dayIndex: i }));
 
+    // Calculate split offset for Equity Curve
+    const maxEq = Math.max(...equityCurve.map(i => i.equity), 10000);
+    const minEq = Math.min(...equityCurve.map(i => i.equity), 10000);
+    let equityOff = 0;
+    if (maxEq <= 10000) {
+      equityOff = 1;
+    } else if (minEq >= 10000) {
+      equityOff = 0;
+    } else {
+      equityOff = (maxEq - 10000) / (maxEq - minEq);
+    }
+
     return {
       metrics: { total_trades, win_rate, total_pnl, profit_factor },
       equityCurve,
-      sideCountBreakdown,
+      equityOff,
+      sideWinRateBreakdown,
       dowBreakdown
     };
   }, [filteredTrades]);
@@ -92,7 +107,7 @@ export default function Dashboard() {
     return <div className="flex h-full items-center justify-center text-zinc-500">Loading data...</div>;
   }
 
-  const { metrics, equityCurve, sideCountBreakdown, dowBreakdown } = data;
+  const { metrics, equityCurve, equityOff, sideWinRateBreakdown, dowBreakdown } = data;
 
   const handleBarClick = (data: any) => {
     if (data && data.activePayload && data.activePayload.length > 0) {
@@ -120,33 +135,23 @@ export default function Dashboard() {
   return (
     <div className="space-y-8 pb-8">
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard 
           title="Net P&L" 
           value={`$${metrics.total_pnl.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
-          icon={<Wallet className="text-green-500" />}
           trend={metrics.total_pnl >= 0 ? "positive" : "negative"}
         />
         <MetricCard 
           title="Win Rate" 
           value={`${metrics.win_rate.toFixed(1)}%`}
-          icon={<Target className="text-blue-500" />}
         />
         <MetricCard 
           title="Profit Factor" 
           value={metrics.profit_factor.toFixed(2)}
-          icon={<Activity className="text-purple-500" />}
-        />
-        <MetricCard 
-          title="Discipline Score" 
-          value="100%"
-          icon={<ClipboardCheck className="text-yellow-500" />}
-          trend="positive"
         />
         <MetricCard 
           title="Total Trades" 
           value={metrics.total_trades.toString()}
-          icon={<BarChart3 className="text-orange-500" />}
         />
       </div>
 
@@ -159,8 +164,12 @@ export default function Dashboard() {
               <AreaChart data={equityCurve} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0}/>
+                    <stop offset={equityOff} stopColor="#22c55e" stopOpacity={0.3}/>
+                    <stop offset={equityOff} stopColor="#ec4899" stopOpacity={0.3}/>
+                  </linearGradient>
+                  <linearGradient id="strokeEquity" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset={equityOff} stopColor="#22c55e" stopOpacity={1}/>
+                    <stop offset={equityOff} stopColor="#ec4899" stopOpacity={1}/>
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
@@ -182,12 +191,11 @@ export default function Dashboard() {
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                  itemStyle={{ color: '#22c55e' }}
                 />
                 <Area 
                   type="monotone" 
                   dataKey="equity" 
-                  stroke="#22c55e" 
+                  stroke="url(#strokeEquity)" 
                   strokeWidth={2}
                   fillOpacity={1} 
                   fill="url(#colorEquity)" 
@@ -205,15 +213,15 @@ export default function Dashboard() {
           {/* Long vs Short Pie Chart */}
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold">Long vs Short Volume</h2>
+            <h2 className="text-lg font-semibold">Win Rate by Side (%)</h2>
             <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded">Click to filter</span>
           </div>
           <div className="h-64 w-full cursor-pointer">
-            {sideCountBreakdown.some(d => d.value > 0) ? (
+            {sideWinRateBreakdown.some(d => d.value > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={sideCountBreakdown}
+                    data={sideWinRateBreakdown}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -222,17 +230,17 @@ export default function Dashboard() {
                     dataKey="value"
                     onClick={handlePieClick}
                   >
-                    {sideCountBreakdown.map((entry, index) => (
+                    {sideWinRateBreakdown.map((entry, index) => (
                       <Cell 
                         key={`cell-${index}`} 
-                        fill={COLORS[index % COLORS.length]} 
+                        fill={entry.fill} 
                         opacity={filters.direction === "All" || filters.direction === entry.name ? 1 : 0.3}
                       />
                     ))}
                   </Pie>
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                    formatter={(value: any) => `${value} trades`}
+                    formatter={(value: any) => `${value}%`}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -266,7 +274,7 @@ export default function Dashboard() {
                       return (
                         <Cell 
                           key={`cell-${index}`} 
-                          fill={entry.pnl >= 0 ? '#22c55e' : '#ef4444'} 
+                          fill={entry.pnl >= 0 ? '#22c55e' : '#ec4899'} 
                           opacity={isActive ? 1 : 0.3}
                         />
                       );
@@ -284,18 +292,15 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ title, value, icon, trend }: { title: string, value: string, icon: React.ReactNode, trend?: "positive" | "negative" }) {
+function MetricCard({ title, value, trend }: { title: string, value: string, trend?: "positive" | "negative" }) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-zinc-400">{title}</h3>
-        <div className="p-2 bg-zinc-950 rounded-lg border border-zinc-800">
-          {icon}
-        </div>
       </div>
       <div>
         <div className={`text-3xl font-bold ${
-          trend === "positive" ? "text-green-500" : trend === "negative" ? "text-red-500" : "text-white"
+          trend === "positive" ? "text-green-500" : trend === "negative" ? "text-pink-500" : "text-white"
         }`}>
           {value}
         </div>

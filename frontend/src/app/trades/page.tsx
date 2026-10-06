@@ -98,7 +98,7 @@ export default function TradesPage() {
                     <td className="px-6 py-4 font-medium">{trade.symbol}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        trade.direction === "Long" ? "bg-green-500/10 text-green-500" : "bg-red-500/10 text-red-500"
+                        trade.direction === "Long" ? "bg-green-500/10 text-green-500" : "bg-pink-500/10 text-pink-500"
                       }`}>
                         {trade.direction}
                       </span>
@@ -108,7 +108,7 @@ export default function TradesPage() {
                     <td className="px-6 py-4 text-zinc-400 font-mono">{trade.entry_price.toFixed(5)}</td>
                     <td className="px-6 py-4 text-zinc-400 font-mono">{trade.exit_price.toFixed(5)}</td>
                     <td className={`px-6 py-4 text-right font-medium font-mono ${
-                      trade.is_win ? "text-green-500" : "text-red-500"
+                      trade.is_win ? "text-green-500" : "text-pink-500"
                     }`}>
                       {trade.pnl > 0 ? "+" : ""}${trade.pnl.toFixed(2)}
                     </td>
@@ -171,11 +171,11 @@ export default function TradesPage() {
 
             <div className="flex justify-between items-center pb-4 border-b border-zinc-800">
               <span className={`px-3 py-1 rounded-md text-sm font-semibold ${
-                selectedTrade.direction === "Long" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
+                selectedTrade.direction === "Long" ? "bg-green-500/20 text-green-400" : "bg-pink-500/20 text-pink-400"
               }`}>
                 {selectedTrade.direction}
               </span>
-              <span className={`text-xl font-bold font-mono ${selectedTrade.pnl >= 0 ? "text-green-500" : "text-red-500"}`}>
+              <span className={`text-xl font-bold font-mono ${selectedTrade.pnl >= 0 ? "text-green-500" : "text-pink-500"}`}>
                 {selectedTrade.pnl >= 0 ? "+" : ""}${selectedTrade.pnl.toFixed(2)}
               </span>
             </div>
@@ -208,18 +208,14 @@ export default function TradesPage() {
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">Max Adverse</div>
-                <div className="font-medium text-red-500">-{selectedTrade.mae_pips?.toFixed(1) || "-"} pips</div>
+                <div className="font-medium text-pink-500">-{selectedTrade.mae_pips?.toFixed(1) || "-"} pips</div>
               </div>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 flex items-center justify-between">
-                  <span>Setup / Playbook</span>
-                  <div className="flex items-center gap-2">
-                    <input type="checkbox" className="rounded bg-zinc-800 border-zinc-700" defaultChecked />
-                    <span className="text-zinc-400 normal-case">Rules Followed</span>
-                  </div>
+                <label className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 block">
+                  Setup
                 </label>
                 <div className="bg-zinc-950 border border-zinc-800 rounded-md p-3 text-sm text-white">
                   {selectedTrade.setup || "No setup tagged"}

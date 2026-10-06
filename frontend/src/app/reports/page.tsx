@@ -97,8 +97,8 @@ export default function ReportsPage() {
             <AreaChart data={data.drawdownCurve} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorDd" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
@@ -106,10 +106,10 @@ export default function ReportsPage() {
               <YAxis stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                itemStyle={{ color: '#ef4444' }}
+                itemStyle={{ color: '#ec4899' }}
                 formatter={(value: any) => `${value}%`}
               />
-              <Area type="monotone" dataKey="drawdown" stroke="#ef4444" strokeWidth={2} fillOpacity={1} fill="url(#colorDd)" />
+              <Area type="monotone" dataKey="drawdown" stroke="#ec4899" strokeWidth={2} fillOpacity={1} fill="url(#colorDd)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -132,7 +132,7 @@ export default function ReportsPage() {
                 />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
                   {data.hourlyBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? '#22c55e' : '#ef4444'} />
+                    <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? '#22c55e' : '#ec4899'} />
                   ))}
                 </Bar>
               </BarChart>
