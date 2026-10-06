@@ -20,7 +20,7 @@ export default function NewsPage() {
       <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <CalendarIcon size={20} className="text-zinc-400" />
-          Economic Calendar (Red Folder)
+          News
         </h2>
       </div>
       

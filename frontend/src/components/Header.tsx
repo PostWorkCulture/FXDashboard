@@ -13,6 +13,7 @@ export function Header() {
     "/calendar": "Calendar",
     "/trades": "Trades",
     "/reports": "Reports",
+    "/summaries": "Summaries",
     "/news": "News",
   };
   const title = titleMap[pathname] || "Dashboard";

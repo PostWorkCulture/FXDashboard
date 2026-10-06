@@ -36,7 +36,7 @@ export default function TradesPage() {
     <div className="flex flex-col xl:flex-row gap-6 h-full pb-8">
       <div className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[600px]">
         <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Trade Log ({sortedTrades.length} records)</h2>
+          <h2 className="text-lg font-semibold">Trades ({sortedTrades.length} records)</h2>
         </div>
         
         <div className="overflow-x-auto flex-1">
