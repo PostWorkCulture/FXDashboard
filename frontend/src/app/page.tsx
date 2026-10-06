@@ -230,9 +230,8 @@ export default function Dashboard() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-semibold">Win Rate by Side (%)</h2>
-            <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded">Click to filter</span>
           </div>
-          <div className="h-64 w-full cursor-pointer">
+          <div className="h-64 w-full">
             {sideWinRateBreakdown.some(d => d.value > 0) ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -246,7 +245,6 @@ export default function Dashboard() {
                     cornerRadius={6}
                     stroke="none"
                     dataKey="value"
-                    onClick={handlePieClick}
                   >
                     {sideWinRateBreakdown.map((entry, index) => (
                       <Cell 
@@ -275,12 +273,11 @@ export default function Dashboard() {
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h2 className="text-lg font-semibold">P&L by Entry Day</h2>
-            <span className="text-xs text-zinc-500 bg-zinc-800 px-2 py-1 rounded">Click bar to filter</span>
           </div>
-          <div className="h-64 w-full cursor-pointer">
+          <div className="h-64 w-full">
             {dowBreakdown.some(d => d.pnl !== 0) ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dowBreakdown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} onClick={handleBarClick}>
+                <BarChart data={dowBreakdown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                   <XAxis dataKey="name" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />

@@ -15,6 +15,7 @@ export function Header() {
     "/reports": "Reports",
     "/summaries": "Summaries",
     "/news": "News",
+    "/prop": "Prop",
   };
   const title = titleMap[pathname] || "Dashboard";
 

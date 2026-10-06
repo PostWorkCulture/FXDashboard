@@ -4,9 +4,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
-  Wallet, 
+  Wallet,
   PieChart as PieChartIcon, 
-  
+  Trophy,
   TrendingUp,
   Calendar,
   Globe
@@ -33,6 +33,7 @@ export function Sidebar() {
         <NavItem href="/summaries" icon={<TrendingUp size={20} />} label="Summaries" active={pathname === "/summaries"} />
         <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Reports" active={pathname === "/reports"} />
         <NavItem href="/news" icon={<Globe size={20} />} label="News" active={pathname === "/news"} />
+        <NavItem href="/prop" icon={<Trophy size={20} />} label="Prop" active={pathname === "/prop"} />
       </nav>
     </aside>
   );
