@@ -49,34 +49,36 @@ export function Header() {
               </button>
             </div>
             
-            <div className="flex items-center gap-1.5 px-1">
+            <div className="flex items-center gap-2 px-1">
               <button 
                 onClick={() => setFilters(f => ({ ...f, symbol: "All" }))}
-                className={`p-1 rounded-md transition-all hover:scale-105 ${filters.symbol === "All" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
+                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "All" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
                 title="All Pairs"
               >
-                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/all.jpg`} className={`w-8 h-8 rounded-sm object-cover brightness-125 contrast-125 ${filters.symbol === "All" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
+                <div className={`w-16 h-16 rounded-md overflow-hidden ${filters.symbol === "All" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`}>
+                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/all.jpg`} className="w-full h-full object-cover scale-[1.35] brightness-125 contrast-125" />
+                </div>
               </button>
               <button 
                 onClick={() => togglePair("EURUSD")}
-                className={`p-1 rounded-md transition-all hover:scale-105 ${filters.symbol === "EURUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
+                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "EURUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
                 title="EURUSD"
               >
-                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/eurusd.jpg`} className={`w-8 h-8 rounded-sm object-cover brightness-125 contrast-125 ${filters.symbol === "EURUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/eurusd.jpg`} className={`w-16 h-16 rounded-md object-cover brightness-125 contrast-125 ${filters.symbol === "EURUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
               </button>
               <button 
                 onClick={() => togglePair("GBPUSD")}
-                className={`p-1 rounded-md transition-all hover:scale-105 ${filters.symbol === "GBPUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
+                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "GBPUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
                 title="GBPUSD"
               >
-                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/gbpusd.jpg`} className={`w-8 h-8 rounded-sm object-cover brightness-125 contrast-125 ${filters.symbol === "GBPUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/gbpusd.jpg`} className={`w-16 h-16 rounded-md object-cover brightness-125 contrast-125 ${filters.symbol === "GBPUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
               </button>
               <button 
                 onClick={() => togglePair("AUDUSD")}
-                className={`p-1 rounded-md transition-all hover:scale-105 ${filters.symbol === "AUDUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
+                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "AUDUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
                 title="AUDUSD"
               >
-                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/audusd.jpg`} className={`w-8 h-8 rounded-sm object-cover brightness-125 contrast-125 ${filters.symbol === "AUDUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/audusd.jpg`} className={`w-16 h-16 rounded-md object-cover brightness-125 contrast-125 ${filters.symbol === "AUDUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
               </button>
             </div>
           </div>
