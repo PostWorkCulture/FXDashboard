@@ -92,6 +92,7 @@ export default function TradesPage() {
                     </div>
                   </th>
                   <th className="px-6 py-4 font-medium align-top">Exit Date</th>
+                  <th className="px-6 py-4 font-medium align-top">Duration</th>
                   <th className="px-6 py-4 font-medium align-top">Entry Price</th>
                   <th className="px-6 py-4 font-medium align-top">Exit Price</th>
                   <th className="px-6 py-4 font-medium text-right align-top">P&L</th>
@@ -115,6 +116,13 @@ export default function TradesPage() {
                     </td>
                     <td className="px-6 py-4 text-zinc-400">{trade.entry_time.split(".")[0]}</td>
                     <td className="px-6 py-4 text-zinc-400">{trade.exit_time.split(".")[0]}</td>
+                    <td className="px-6 py-4 text-zinc-400">
+                      {trade.duration_hours ? (
+                        trade.duration_hours >= 24 
+                          ? `${Math.floor(trade.duration_hours/24)}d ${trade.duration_hours%24}h` 
+                          : `${trade.duration_hours}h`
+                      ) : '-'}
+                    </td>
                     <td className="px-6 py-4 text-zinc-400 font-mono">{trade.entry_price.toFixed(5)}</td>
                     <td className="px-6 py-4 text-zinc-400 font-mono">{trade.exit_price.toFixed(5)}</td>
                     <td className={`px-6 py-4 text-right font-medium font-mono ${
@@ -206,7 +214,13 @@ export default function TradesPage() {
             <div className="grid grid-cols-2 gap-4 text-sm bg-zinc-950 p-4 rounded-lg border border-zinc-800/50">
               <div>
                 <div className="text-zinc-500 mb-1">Duration</div>
-                <div className="font-medium text-white">{selectedTrade.duration_hours?.toFixed(1) || "-"} hrs</div>
+                <div className="font-medium text-white">
+                  {selectedTrade.duration_hours ? (
+                    selectedTrade.duration_hours >= 24 
+                      ? `${Math.floor(selectedTrade.duration_hours/24)}d ${selectedTrade.duration_hours%24}h` 
+                      : `${selectedTrade.duration_hours}h`
+                  ) : "-"}
+                </div>
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">R-Multiple</div>
