@@ -13,6 +13,13 @@ export interface Trade {
   exit_price: number;
   pnl: number;
   is_win: boolean;
+  duration_hours?: number;
+  mae_pips?: number;
+  mfe_pips?: number;
+  r_multiple?: number;
+  setup?: string;
+  mistakes?: string;
+  notes?: string;
 }
 
 interface FilterState {

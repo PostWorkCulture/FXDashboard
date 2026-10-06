@@ -7,7 +7,8 @@ import {
   Wallet, 
   PieChart as PieChartIcon, 
   Settings,
-  TrendingUp
+  TrendingUp,
+  Calendar
 } from "lucide-react";
 
 export function Sidebar() {
@@ -26,6 +27,7 @@ export function Sidebar() {
       
       <nav className="flex-1 px-4 py-4 space-y-1">
         <NavItem href="/" icon={<LayoutDashboard size={20} />} label="Overview" active={pathname === "/"} />
+        <NavItem href="/calendar" icon={<Calendar size={20} />} label="Calendar" active={pathname === "/calendar"} />
         <NavItem href="/trades" icon={<Wallet size={20} />} label="Trade Log" active={pathname === "/trades"} />
         <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Detailed Reports" active={pathname === "/reports"} />
       </nav>

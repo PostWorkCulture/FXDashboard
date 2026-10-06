@@ -10,6 +10,7 @@ export function Header() {
 
   const titleMap: Record<string, string> = {
     "/": "Overview",
+    "/calendar": "Calendar View",
     "/trades": "Trade Log",
     "/reports": "Detailed Reports",
   };

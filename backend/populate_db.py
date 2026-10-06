@@ -3,11 +3,11 @@ import pandas as pd
 import vectorbt as vbt
 import os
 import warnings
+import numpy as np
 warnings.filterwarnings("ignore")
 
 def populate_database():
-    print("Running backtest to generate data...")
-    # Path to data
+    print("Running extreme-detail backtest to generate data...")
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_dir = os.path.dirname(os.path.dirname(script_dir))
     data_path = os.path.join(project_dir, "data", "EURUSD_H1.csv") 
@@ -17,8 +17,6 @@ def populate_database():
         return
 
     df = pd.read_csv(data_path, index_col='time', parse_dates=True)
-    
-    # Filter data up to Jan last year (end of 2024)
     df = df.loc[:'2024-12-31']
     
     close = df['close']
@@ -38,8 +36,10 @@ def populate_database():
     l_rsi = l_rsi & (~bad_days) & (~bad_hours)
     s_rsi = s_rsi & (~bad_days) & (~bad_hours)
     
-    sl = 40 * pip_pct
-    tp = 80 * pip_pct 
+    sl_pips = 40
+    tp_pips = 80
+    sl = sl_pips * pip_pct
+    tp = tp_pips * pip_pct 
     
     pf = vbt.Portfolio.from_signals(
         close, entries=l_rsi, short_entries=s_rsi,
@@ -50,13 +50,14 @@ def populate_database():
     
     trades = pf.trades.records_readable
     
-    # Connect to SQLite DB
     db_path = os.path.join(script_dir, "trades.db")
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     
+    # Drop and recreate for extreme detail
+    cursor.execute("DROP TABLE IF EXISTS trades")
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS trades (
+    CREATE TABLE trades (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         trade_type TEXT,
         symbol TEXT,
@@ -66,42 +67,71 @@ def populate_database():
         entry_price REAL,
         exit_price REAL,
         pnl REAL,
-        is_win BOOLEAN
+        is_win BOOLEAN,
+        duration_hours REAL,
+        mae_pips REAL,
+        mfe_pips REAL,
+        r_multiple REAL,
+        setup TEXT,
+        mistakes TEXT,
+        notes TEXT
     )
     ''')
     
-    # Clear existing backtest trades
-    cursor.execute("DELETE FROM trades WHERE trade_type='backtest'")
-    
     insert_data = []
     
-    # Simulate a standard lot where 1 pip = $10. 
-    # Return * 10000 roughly scales the percentage return to dollars on a $10,000 account (or 1 standard lot depending on leverage).
     for index, row in trades.iterrows():
         direction = "Long" if row['Direction'] == 'Long' else "Short"
         pnl_dollar = row['Return'] * 10000
         is_win = pnl_dollar > 0
         
+        entry_t = row['Entry Timestamp']
+        exit_t = row['Exit Timestamp']
+        
+        duration = (exit_t - entry_t).total_seconds() / 3600.0
+        
+        # Calculate MAE and MFE
+        trade_window = df.loc[entry_t:exit_t]
+        if direction == "Long":
+            max_price = trade_window['high'].max()
+            min_price = trade_window['low'].min()
+            mfe_pips = (max_price - row['Avg Entry Price']) / 0.0001
+            mae_pips = (row['Avg Entry Price'] - min_price) / 0.0001
+        else:
+            max_price = trade_window['high'].max()
+            min_price = trade_window['low'].min()
+            mfe_pips = (row['Avg Entry Price'] - min_price) / 0.0001
+            mae_pips = (max_price - row['Avg Entry Price']) / 0.0001
+            
+        r_multiple = pnl_dollar / (sl_pips * 10) # Assuming $10 per pip for a standard lot
+        
         insert_data.append((
             "backtest",
             "EURUSD",
             direction,
-            str(row['Entry Timestamp']),
-            str(row['Exit Timestamp']),
+            str(entry_t),
+            str(exit_t),
             row['Avg Entry Price'],
             row['Avg Exit Price'],
             pnl_dollar,
-            is_win
+            is_win,
+            duration,
+            mae_pips,
+            mfe_pips,
+            r_multiple,
+            "RSI Reversal",
+            "", # Mistakes
+            "Automated execution." # Notes
         ))
         
     cursor.executemany('''
-        INSERT INTO trades (trade_type, symbol, direction, entry_time, exit_time, entry_price, exit_price, pnl, is_win)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO trades (trade_type, symbol, direction, entry_time, exit_time, entry_price, exit_price, pnl, is_win, duration_hours, mae_pips, mfe_pips, r_multiple, setup, mistakes, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', insert_data)
     
     conn.commit()
     conn.close()
-    print(f"Inserted {len(insert_data)} backtest trades into trades.db using final H1 strategy")
+    print(f"Inserted {len(insert_data)} ultra-detailed backtest trades into trades.db")
 
 if __name__ == "__main__":
     populate_database()

@@ -12,7 +12,10 @@ import {
   ResponsiveContainer,
   BarChart,
   Bar,
-  Cell
+  Cell,
+  ScatterChart,
+  Scatter,
+  ZAxis
 } from "recharts";
 
 export default function ReportsPage() {
@@ -63,7 +66,16 @@ export default function ReportsPage() {
       { name: "Shorts", winRate: Number(shortWin.toFixed(1)) }
     ];
 
-    return { drawdownCurve, hourlyBreakdown, winRateData };
+    // Execution Efficiency (MFE vs PNL)
+    const scatterData = filteredTrades.map(t => ({
+      pnl: t.pnl,
+      mfe: t.mfe_pips || 0,
+      mae: t.mae_pips || 0,
+      r_multiple: t.r_multiple || 0,
+      id: t.id
+    })).filter(t => t.mfe !== 0 || t.mae !== 0);
+
+    return { drawdownCurve, hourlyBreakdown, winRateData, scatterData };
   }, [filteredTrades]);
 
   if (isLoading) {
@@ -149,6 +161,26 @@ export default function ReportsPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm mt-6">
+        <h2 className="text-lg font-semibold mb-6">Execution Efficiency (MFE vs Net P&L)</h2>
+        <div className="h-80 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <ScatterChart margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
+              <XAxis type="number" dataKey="mfe" name="MFE (pips)" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis type="number" dataKey="pnl" name="PnL ($)" stroke="#52525b" fontSize={12} tickLine={false} axisLine={false} />
+              <ZAxis type="number" range={[40, 40]} />
+              <Tooltip 
+                cursor={{ strokeDasharray: '3 3', stroke: '#52525b' }} 
+                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                formatter={(value: any, name: any) => name === "PnL ($)" ? `$${value.toFixed(2)}` : `${value.toFixed(1)} pips`}
+              />
+              <Scatter name="Trades" data={data.scatterData} fill="#3b82f6" fillOpacity={0.6} />
+            </ScatterChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
