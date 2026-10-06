@@ -27,16 +27,17 @@ export default function CalendarPage() {
 
   // Compute Daily Aggregates
   const dailyData = useMemo(() => {
-    const map = new Map<string, { pnl: number; trades: number; wins: number }>();
+    const map = new Map<string, { pnl: number; trades: number; wins: number; symbols: Set<string> }>();
     filteredTrades.forEach(t => {
       const dateStr = t.entry_time.split(" ")[0]; // YYYY-MM-DD
       if (!map.has(dateStr)) {
-        map.set(dateStr, { pnl: 0, trades: 0, wins: 0 });
+        map.set(dateStr, { pnl: 0, trades: 0, wins: 0, symbols: new Set() });
       }
       const dayData = map.get(dateStr)!;
       dayData.pnl += t.pnl;
       dayData.trades += 1;
       if (t.is_win) dayData.wins += 1;
+      dayData.symbols.add(t.symbol);
     });
     return map;
   }, [filteredTrades]);
@@ -111,6 +112,13 @@ export default function CalendarPage() {
                 </div>
                 {data && (
                   <div className="mt-auto space-y-1">
+                    <div className="flex flex-wrap gap-1 mb-1">
+                      {Array.from(data.symbols).map(sym => (
+                        <span key={sym} className="text-[10px] leading-none px-1 py-0.5 bg-zinc-800 text-zinc-400 rounded">
+                          {sym.replace("USD", "")}
+                        </span>
+                      ))}
+                    </div>
                     <div className={`text-sm font-bold ${data.pnl >= 0 ? "text-green-500" : "text-pink-500"}`}>
                       {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
                     </div>

@@ -158,7 +158,7 @@ export default function Dashboard() {
         <div className="h-80 w-full">
           {equityCurve.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={equityCurve} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+              <AreaChart data={equityCurve} margin={{ top: 10, right: 0, left: 30, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1">
                     <stop offset={equityOff} stopColor="#22c55e" stopOpacity={0.3}/>
@@ -193,7 +193,7 @@ export default function Dashboard() {
                   y={10000} 
                   stroke="#52525b" 
                   strokeDasharray="3 3" 
-                  label={{ position: 'insideTopLeft', value: 'Starting Balance', fill: '#71717a', fontSize: 12 }} 
+                  label={{ position: 'left', value: 'Start', fill: '#a1a1aa', fontSize: 12 }} 
                 />
                 <Area 
                   type="monotone" 
