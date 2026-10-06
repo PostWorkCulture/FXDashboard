@@ -44,16 +44,31 @@ export function Header() {
               </button>
             </div>
             
-            <select 
-              className="bg-transparent text-sm font-medium text-zinc-300 outline-none cursor-pointer border-none py-1.5 pl-2 pr-4 appearance-none"
-              value={filters.symbol}
-              onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
-            >
-              <option value="All">All Pairs</option>
-              <option value="EURUSD">EURUSD</option>
-              <option value="GBPUSD">GBPUSD</option>
-              <option value="AUDUSD">AUDUSD</option>
-            </select>
+            <div className="flex items-center pl-1">
+              {filters.symbol === "All" ? (
+                <div className="flex -space-x-1.5 ml-1">
+                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/eurusd.jpg`} className="w-5 h-5 rounded-md object-cover border border-zinc-900 relative z-30" alt="EURUSD" />
+                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/gbpusd.jpg`} className="w-5 h-5 rounded-md object-cover border border-zinc-900 relative z-20" alt="GBPUSD" />
+                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/audusd.jpg`} className="w-5 h-5 rounded-md object-cover border border-zinc-900 relative z-10" alt="AUDUSD" />
+                </div>
+              ) : (
+                <img 
+                  src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/${filters.symbol.toLowerCase()}.jpg`} 
+                  alt={filters.symbol} 
+                  className="w-5 h-5 rounded-md object-cover ml-1"
+                />
+              )}
+              <select 
+                className="bg-transparent text-sm font-medium text-zinc-300 outline-none cursor-pointer border-none py-1.5 pl-2 pr-4 appearance-none"
+                value={filters.symbol}
+                onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
+              >
+                <option value="All">All Pairs</option>
+                <option value="EURUSD">EURUSD</option>
+                <option value="GBPUSD">GBPUSD</option>
+                <option value="AUDUSD">AUDUSD</option>
+              </select>
+            </div>
             <div className="pointer-events-none pr-3 text-zinc-500">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
             </div>
