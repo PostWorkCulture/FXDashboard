@@ -24,12 +24,14 @@ import {
   Cell,
   ReferenceLine
 } from "recharts";
+import { useRouter } from "next/navigation";
 
 const COLORS = ['#22c55e', '#ec4899', '#3b82f6', '#f59e0b', '#8b5cf6'];
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function Dashboard() {
   const { filteredTrades, isLoading, filters, setFilters } = useData();
+  const router = useRouter();
 
   const data = useMemo(() => {
     // Metrics
@@ -114,22 +116,16 @@ export default function Dashboard() {
     if (data && data.activePayload && data.activePayload.length > 0) {
       const payload = data.activePayload[0].payload;
       if (payload.dayIndex !== undefined) {
-        // Toggle day filter
-        setFilters(f => ({
-          ...f,
-          dayOfWeek: f.dayOfWeek === payload.dayIndex ? null : payload.dayIndex
-        }));
+        setFilters(f => ({ ...f, dayOfWeek: payload.dayIndex }));
+        router.push("/trades");
       }
     }
   };
 
   const handlePieClick = (data: any) => {
     if (data && data.name) {
-      // Toggle side filter
-      setFilters(f => ({
-        ...f,
-        direction: f.direction === data.name ? "All" : data.name
-      }));
+      setFilters(f => ({ ...f, direction: data.name }));
+      router.push("/trades");
     }
   };
 

@@ -28,6 +28,7 @@ interface FilterState {
   direction: string; // "All", "Long", "Short"
   dayOfWeek: number | null; // null for all, 0-6 for Mon-Sun
   dateRange: "All" | "Today" | "This Week" | "This Month" | "Last Month" | "This Year";
+  selectedTradeId?: number | null;
 }
 
 interface DataContextType {

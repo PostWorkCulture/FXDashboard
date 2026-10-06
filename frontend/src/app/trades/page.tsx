@@ -18,6 +18,16 @@ export default function TradesPage() {
   // Sort descending by entry time (newest first)
   const sortedTrades = [...filteredTrades].sort((a, b) => new Date(b.entry_time).getTime() - new Date(a.entry_time).getTime());
 
+  // Auto-open selected trade from global filter link
+  if (filters.selectedTradeId && !selectedTrade) {
+    const t = sortedTrades.find(trade => trade.id === filters.selectedTradeId);
+    if (t) {
+      setSelectedTrade(t);
+      // Clear it so we don't get stuck if user closes the modal
+      setTimeout(() => setFilters(f => ({ ...f, selectedTradeId: null })), 100);
+    }
+  }
+
   const totalPages = Math.ceil(sortedTrades.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentTrades = sortedTrades.slice(startIndex, startIndex + itemsPerPage);

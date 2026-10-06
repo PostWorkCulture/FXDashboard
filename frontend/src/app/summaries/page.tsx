@@ -2,9 +2,16 @@
 
 import { useData } from "@/lib/data-context";
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 
 export default function SummariesPage() {
-  const { filteredTrades, isLoading } = useData();
+  const { filteredTrades, isLoading, setFilters } = useData();
+  const router = useRouter();
+
+  const handleFilterNav = (update: any) => {
+    setFilters(f => ({ ...f, ...update }));
+    router.push("/trades");
+  };
 
   const observations = useMemo(() => {
     if (filteredTrades.length === 0) return null;
@@ -72,8 +79,8 @@ export default function SummariesPage() {
         pnl: cmNet,
         winRate: cmWinRate
       },
-      bestDay: { name: bestDayIdx >= 0 ? dayNames[bestDayIdx] : "N/A", pnl: bestDayPnl },
-      worstDay: { name: worstDayIdx >= 0 ? dayNames[worstDayIdx] : "N/A", pnl: worstDayPnl },
+      bestDay: { name: bestDayIdx >= 0 ? dayNames[bestDayIdx] : "N/A", idx: bestDayIdx, pnl: bestDayPnl },
+      worstDay: { name: worstDayIdx >= 0 ? dayNames[worstDayIdx] : "N/A", idx: worstDayIdx, pnl: worstDayPnl },
       longPnl,
       shortPnl,
       unusual
@@ -100,7 +107,7 @@ export default function SummariesPage() {
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-white mb-4">Current Month Update ({currentMonth.name})</h2>
         <p className="text-zinc-300 leading-relaxed">
-          So far in {currentMonth.name}, the strategy has taken <strong className="text-white">{currentMonth.trades}</strong> trades, 
+          So far in <button onClick={() => handleFilterNav({ dateRange: "This Month" })} className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">{currentMonth.name}</button>, the strategy has taken <strong className="text-white">{currentMonth.trades}</strong> trades, 
           generating a net P&L of <strong className={currentMonth.pnl >= 0 ? "text-green-500" : "text-pink-500"}>
             {currentMonth.pnl >= 0 ? "+" : ""}${currentMonth.pnl.toFixed(2)}
           </strong>. 
@@ -115,13 +122,13 @@ export default function SummariesPage() {
         <h2 className="text-lg font-semibold text-white mb-4">Strategic Optimizations & Trends</h2>
         <ul className="space-y-4 text-zinc-300 leading-relaxed list-disc list-inside">
           <li>
-            <strong>Day of Week Bias:</strong> The algorithm performs best on <strong className="text-green-500">{bestDay.name}s</strong> (${bestDay.pnl.toFixed(2)} Net P&L). 
-            Conversely, <strong className="text-pink-500">{worstDay.name}s</strong> have been the weakest link (${worstDay.pnl.toFixed(2)}). 
+            <strong>Day of Week Bias:</strong> The algorithm performs best on <button onClick={() => handleFilterNav({ dayOfWeek: bestDay.idx })} className="text-green-500 hover:text-green-400 underline underline-offset-2 transition-colors">{bestDay.name}s</button> (${bestDay.pnl.toFixed(2)} Net P&L). 
+            Conversely, <button onClick={() => handleFilterNav({ dayOfWeek: worstDay.idx })} className="text-pink-500 hover:text-pink-400 underline underline-offset-2 transition-colors">{worstDay.name}s</button> have been the weakest link (${worstDay.pnl.toFixed(2)}). 
             <em> Suggestion: Consider running a backtest with {worstDay.name} disabled to see if the overall Profit Factor improves.</em>
           </li>
           <li>
-            <strong>Directional Edge:</strong> Long trades have contributed <strong className={longPnl >= 0 ? "text-green-500" : "text-pink-500"}>${longPnl.toFixed(2)}</strong>, 
-            while Short trades have contributed <strong className={shortPnl >= 0 ? "text-green-500" : "text-pink-500"}>${shortPnl.toFixed(2)}</strong>. 
+            <strong>Directional Edge:</strong> <button onClick={() => handleFilterNav({ direction: "Long" })} className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">Long trades</button> have contributed <strong className={longPnl >= 0 ? "text-green-500" : "text-pink-500"}>${longPnl.toFixed(2)}</strong>, 
+            while <button onClick={() => handleFilterNav({ direction: "Short" })} className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">Short trades</button> have contributed <strong className={shortPnl >= 0 ? "text-green-500" : "text-pink-500"}>${shortPnl.toFixed(2)}</strong>. 
             {longPnl > shortPnl * 1.5 ? " The strategy exhibits a heavy long bias. Make sure it survives prolonged bear markets." : ""}
             {shortPnl > longPnl * 1.5 ? " The strategy exhibits a heavy short bias." : ""}
           </li>
@@ -138,7 +145,12 @@ export default function SummariesPage() {
           {unusual.map(t => (
             <div key={t.id} className="p-3 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center justify-between">
               <div>
-                <span className="font-mono text-zinc-400">#{t.id}</span>
+                <button 
+                  onClick={() => handleFilterNav({ selectedTradeId: t.id })}
+                  className="font-mono text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors"
+                >
+                  #{t.id}
+                </button>
                 <span className="ml-3 text-white">{t.symbol}</span>
                 <span className="ml-3 text-sm text-zinc-500">{t.entry_time.split(" ")[0]}</span>
               </div>
