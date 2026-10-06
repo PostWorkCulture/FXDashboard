@@ -16,6 +16,10 @@ export function Header() {
   };
   const title = titleMap[pathname] || "Dashboard";
 
+  const togglePair = (pair: string) => {
+    setFilters(f => ({ ...f, symbol: f.symbol === pair ? "All" : pair }));
+  };
+
   return (
     <header className="h-auto min-h-[64px] border-b border-zinc-800 bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between px-8 py-4 sticky top-0 z-20 gap-4">
       <div className="flex items-center gap-6">
@@ -44,33 +48,28 @@ export function Header() {
               </button>
             </div>
             
-            <div className="flex items-center pl-1">
-              {filters.symbol === "All" ? (
-                <div className="flex -space-x-1.5 ml-1">
-                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/eurusd.jpg`} className="w-5 h-5 rounded-md object-cover border border-zinc-900 relative z-30" alt="EURUSD" />
-                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/gbpusd.jpg`} className="w-5 h-5 rounded-md object-cover border border-zinc-900 relative z-20" alt="GBPUSD" />
-                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/audusd.jpg`} className="w-5 h-5 rounded-md object-cover border border-zinc-900 relative z-10" alt="AUDUSD" />
-                </div>
-              ) : (
-                <img 
-                  src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/${filters.symbol.toLowerCase()}.jpg`} 
-                  alt={filters.symbol} 
-                  className="w-5 h-5 rounded-md object-cover ml-1"
-                />
-              )}
-              <select 
-                className="bg-transparent text-sm font-medium text-zinc-300 outline-none cursor-pointer border-none py-1.5 pl-2 pr-4 appearance-none"
-                value={filters.symbol}
-                onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
+            <div className="flex items-center gap-1">
+              <button 
+                onClick={() => togglePair("EURUSD")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${filters.symbol === "EURUSD" ? "bg-zinc-800 text-white shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"}`}
               >
-                <option value="All">All Pairs</option>
-                <option value="EURUSD">EURUSD</option>
-                <option value="GBPUSD">GBPUSD</option>
-                <option value="AUDUSD">AUDUSD</option>
-              </select>
-            </div>
-            <div className="pointer-events-none pr-3 text-zinc-500">
-              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/eurusd.jpg`} className={`w-5 h-5 rounded object-cover ${filters.symbol === "EURUSD" ? "ring-1 ring-blue-500 ring-offset-1 ring-offset-zinc-800" : ""}`} />
+                <span className="text-sm font-medium">EURUSD</span>
+              </button>
+              <button 
+                onClick={() => togglePair("GBPUSD")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${filters.symbol === "GBPUSD" ? "bg-zinc-800 text-white shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"}`}
+              >
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/gbpusd.jpg`} className={`w-5 h-5 rounded object-cover ${filters.symbol === "GBPUSD" ? "ring-1 ring-blue-500 ring-offset-1 ring-offset-zinc-800" : ""}`} />
+                <span className="text-sm font-medium">GBPUSD</span>
+              </button>
+              <button 
+                onClick={() => togglePair("AUDUSD")}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${filters.symbol === "AUDUSD" ? "bg-zinc-800 text-white shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"}`}
+              >
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/audusd.jpg`} className={`w-5 h-5 rounded object-cover ${filters.symbol === "AUDUSD" ? "ring-1 ring-blue-500 ring-offset-1 ring-offset-zinc-800" : ""}`} />
+                <span className="text-sm font-medium">AUDUSD</span>
+              </button>
             </div>
           </div>
 
