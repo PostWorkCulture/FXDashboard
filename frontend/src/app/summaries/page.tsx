@@ -107,7 +107,7 @@ export default function SummariesPage() {
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
         <h2 className="text-lg font-semibold text-white mb-4">Current Month Update ({currentMonth.name})</h2>
         <p className="text-zinc-300 leading-relaxed">
-          So far in <button onClick={() => handleFilterNav({ dateRange: "This Month" })} className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">{currentMonth.name}</button>, the strategy has taken <strong className="text-white">{currentMonth.trades}</strong> trades, 
+          So far in <button onClick={() => handleFilterNav({ dateRange: "This Month" })} className="text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors">{currentMonth.name}</button>, the strategy has taken <strong className="text-white">{currentMonth.trades}</strong> trades, 
           generating a net P&L of <strong className={currentMonth.pnl >= 0 ? "text-green-500" : "text-pink-500"}>
             {currentMonth.pnl >= 0 ? "+" : ""}${currentMonth.pnl.toFixed(2)}
           </strong>. 
@@ -122,13 +122,13 @@ export default function SummariesPage() {
         <h2 className="text-lg font-semibold text-white mb-4">Strategic Optimizations & Trends</h2>
         <ul className="space-y-4 text-zinc-300 leading-relaxed list-disc list-inside">
           <li>
-            <strong>Day of Week Bias:</strong> The algorithm performs best on <button onClick={() => handleFilterNav({ dayOfWeek: bestDay.idx })} className="text-green-500 hover:text-green-400 underline underline-offset-2 transition-colors">{bestDay.name}s</button> (${bestDay.pnl.toFixed(2)} Net P&L). 
-            Conversely, <button onClick={() => handleFilterNav({ dayOfWeek: worstDay.idx })} className="text-pink-500 hover:text-pink-400 underline underline-offset-2 transition-colors">{worstDay.name}s</button> have been the weakest link (${worstDay.pnl.toFixed(2)}). 
+            <strong>Day of Week Bias:</strong> The algorithm performs best on <button onClick={() => handleFilterNav({ dayOfWeek: bestDay.idx })} className="text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors">{bestDay.name}s</button> (${bestDay.pnl.toFixed(2)} Net P&L). 
+            Conversely, <button onClick={() => handleFilterNav({ dayOfWeek: worstDay.idx })} className="text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors">{worstDay.name}s</button> have been the weakest link (${worstDay.pnl.toFixed(2)}). 
             <em> Suggestion: Consider running a backtest with {worstDay.name} disabled to see if the overall Profit Factor improves.</em>
           </li>
           <li>
-            <strong>Directional Edge:</strong> <button onClick={() => handleFilterNav({ direction: "Long" })} className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">Long trades</button> have contributed <strong className={longPnl >= 0 ? "text-green-500" : "text-pink-500"}>${longPnl.toFixed(2)}</strong>, 
-            while <button onClick={() => handleFilterNav({ direction: "Short" })} className="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">Short trades</button> have contributed <strong className={shortPnl >= 0 ? "text-green-500" : "text-pink-500"}>${shortPnl.toFixed(2)}</strong>. 
+            <strong>Directional Edge:</strong> <button onClick={() => handleFilterNav({ direction: "Long" })} className="text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors">Long trades</button> have contributed <strong className={longPnl >= 0 ? "text-green-500" : "text-pink-500"}>${longPnl.toFixed(2)}</strong>, 
+            while <button onClick={() => handleFilterNav({ direction: "Short" })} className="text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors">Short trades</button> have contributed <strong className={shortPnl >= 0 ? "text-green-500" : "text-pink-500"}>${shortPnl.toFixed(2)}</strong>. 
             {longPnl > shortPnl * 1.5 ? " The strategy exhibits a heavy long bias. Make sure it survives prolonged bear markets." : ""}
             {shortPnl > longPnl * 1.5 ? " The strategy exhibits a heavy short bias." : ""}
           </li>
@@ -147,7 +147,7 @@ export default function SummariesPage() {
               <div>
                 <button 
                   onClick={() => handleFilterNav({ selectedTradeId: t.id })}
-                  className="font-mono text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors"
+                  className="font-mono text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors"
                 >
                   #{t.id}
                 </button>
@@ -162,6 +162,21 @@ export default function SummariesPage() {
           {unusual.length === 0 && (
             <div className="text-zinc-500 text-sm">No unusual heat detected on winning trades. Entries are highly precise!</div>
           )}
+        </div>
+      </div>
+
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-white mb-4">Macroeconomic Analyst Brief</h2>
+        <div className="space-y-4 text-zinc-300 leading-relaxed">
+          <p>
+            <strong>USD Outlook:</strong> The Dollar remains supported as the market dials back expectations for aggressive rate cuts by the Federal Reserve. Recent hotter-than-expected inflation data and a resilient labor market suggest a "higher for longer" narrative. This fundamental strength acts as a persistent headwind for major currency pairs like EUR/USD, GBP/USD, and AUD/USD, reinforcing downside pressure in those markets.
+          </p>
+          <p>
+            <strong>GBP & EUR Divergence:</strong> The Bank of England is maintaining a cautiously hawkish stance compared to the ECB, which has explicitly signaled a rate cut path. As a result, GBP/USD is showing relative resilience compared to EUR/USD. However, domestic wage growth in the UK continues to pose sticky inflation risks, meaning any sudden shift in BoE rhetoric could trigger significant GBP volatility.
+          </p>
+          <p>
+            <strong>AUD Headwinds:</strong> The Australian Dollar continues to be squeezed by sluggish economic data out of China, its largest trading partner, offsetting the Reserve Bank of Australia's somewhat hawkish hold on rates. For AUD/USD traders, monitoring iron ore prices and PBOC stimulus measures is just as critical as parsing US macro data.
+          </p>
         </div>
       </div>
     </div>

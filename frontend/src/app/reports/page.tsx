@@ -13,9 +13,9 @@ import {
   BarChart,
   Bar,
   Cell,
-  ScatterChart,
-  Scatter,
-  ZAxis
+  
+  
+  
 } from "recharts";
 
 export default function ReportsPage() {
@@ -66,14 +66,10 @@ export default function ReportsPage() {
       { name: "Shorts", winRate: Number(shortWin.toFixed(1)) }
     ];
 
-    // Execution Efficiency (MFE vs PNL)
-    const scatterData = filteredTrades.map(t => ({
-      pnl: t.pnl,
-      mfe: t.mfe_pips || 0,
-      mae: t.mae_pips || 0,
-      r_multiple: t.r_multiple || 0,
-      id: t.id
-    })).filter(t => t.mfe !== 0 || t.mae !== 0);
+    // Top 3 and Bottom 3 Trades
+    const sortedByPnl = [...filteredTrades].sort((a, b) => b.pnl - a.pnl);
+    const top3Trades = sortedByPnl.slice(0, 3);
+    const bottom3Trades = [...sortedByPnl].reverse().slice(0, 3);
 
     // Trades Per Month
     const monthlyMap = new Map<string, number>();
@@ -92,7 +88,7 @@ export default function ReportsPage() {
         };
       });
 
-    return { drawdownCurve, hourlyBreakdown, winRateData, scatterData, tradesPerMonth };
+    return { drawdownCurve, hourlyBreakdown, winRateData, top3Trades, bottom3Trades, tradesPerMonth };
   }, [filteredTrades]);
 
   if (isLoading) {
@@ -174,24 +170,44 @@ export default function ReportsPage() {
         </div>
       </div>
 
-      {/* Execution Efficiency */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-6">Execution Efficiency (MFE vs Net P&L)</h2>
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <ScatterChart margin={{ top: 10, right: 10, bottom: 0, left: -20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" />
-              <XAxis type="number" dataKey="mfe" name="MFE (pips)" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis type="number" dataKey="pnl" name="PnL ($)" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
-              <ZAxis type="number" range={[40, 40]} />
-              <Tooltip 
-                cursor={{ strokeDasharray: '3 3', stroke: '#52525b' }} 
-                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                formatter={(value: any, name: any) => name === "PnL ($)" ? `$${value.toFixed(2)}` : `${value.toFixed(1)} pips`}
-              />
-              <Scatter name="Trades" data={data.scatterData} fill="#3b82f6" fillOpacity={0.6} />
-            </ScatterChart>
-          </ResponsiveContainer>
+      {/* Top and Bottom Trades */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-green-500 mb-6">Top 3 Most Profitable Trades</h2>
+          <div className="space-y-4">
+            {data.top3Trades.map((t) => (
+              <div key={t.id} className="p-4 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center justify-between">
+                <div>
+                  <div className="font-mono font-medium text-white">#{t.id} <span className="ml-2 text-zinc-400">{t.symbol}</span></div>
+                  <div className="text-sm text-zinc-500">{t.entry_time.split(" ")[0]}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-green-500 font-mono">+${t.pnl.toFixed(2)}</div>
+                  <div className="text-xs text-zinc-500">{t.direction}</div>
+                </div>
+              </div>
+            ))}
+            {data.top3Trades.length === 0 && <div className="text-zinc-500">No trades taken</div>}
+          </div>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-pink-500 mb-6">Top 3 Biggest Losses</h2>
+          <div className="space-y-4">
+            {data.bottom3Trades.map((t) => (
+              <div key={t.id} className="p-4 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center justify-between">
+                <div>
+                  <div className="font-mono font-medium text-white">#{t.id} <span className="ml-2 text-zinc-400">{t.symbol}</span></div>
+                  <div className="text-sm text-zinc-500">{t.entry_time.split(" ")[0]}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-pink-500 font-mono">-${Math.abs(t.pnl).toFixed(2)}</div>
+                  <div className="text-xs text-zinc-500">{t.direction}</div>
+                </div>
+              </div>
+            ))}
+            {data.bottom3Trades.length === 0 && <div className="text-zinc-500">No trades taken</div>}
+          </div>
         </div>
       </div>
 

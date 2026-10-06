@@ -10,8 +10,8 @@ import {
   ClipboardCheck
 } from "lucide-react";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -22,7 +22,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  ReferenceLine
+  ReferenceLine,
+  Legend
 } from "recharts";
 import { useRouter } from "next/navigation";
 
@@ -158,12 +159,8 @@ export default function Dashboard() {
         <div className="h-80 w-full">
           {equityCurve.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={equityCurve} margin={{ top: 10, right: 0, left: 30, bottom: 0 }}>
+              <LineChart data={equityCurve} margin={{ top: 10, right: 0, left: 30, bottom: 0 }}>
                 <defs>
-                  <linearGradient id="colorEquity" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset={equityOff} stopColor="#22c55e" stopOpacity={0.3}/>
-                    <stop offset={equityOff} stopColor="#ec4899" stopOpacity={0.3}/>
-                  </linearGradient>
                   <linearGradient id="strokeEquity" x1="0" y1="0" x2="0" y2="1">
                     <stop offset={equityOff} stopColor="#22c55e" stopOpacity={1}/>
                     <stop offset={equityOff} stopColor="#ec4899" stopOpacity={1}/>
@@ -195,16 +192,14 @@ export default function Dashboard() {
                   strokeDasharray="3 3" 
                   label={{ position: 'left', value: 'Start', fill: '#a1a1aa', fontSize: 12 }} 
                 />
-                <Area 
+                <Line 
                   type="monotone" 
                   dataKey="equity" 
                   stroke="url(#strokeEquity)" 
                   strokeWidth={2}
-                  fillOpacity={1} 
-                  fill="url(#colorEquity)"
-                  baseValue={10000}
+                  dot={false}
                 />
-              </AreaChart>
+              </LineChart>
             </ResponsiveContainer>
           ) : (
             <div className="flex h-full items-center justify-center text-zinc-500">No data available for these filters</div>
@@ -230,7 +225,9 @@ export default function Dashboard() {
                     cy="50%"
                     innerRadius={60}
                     outerRadius={80}
-                    paddingAngle={5}
+                    paddingAngle={6}
+                    cornerRadius={6}
+                    stroke="none"
                     dataKey="value"
                     onClick={handlePieClick}
                   >
@@ -238,7 +235,9 @@ export default function Dashboard() {
                       <Cell 
                         key={`cell-${index}`} 
                         fill={entry.fill} 
+                        stroke="none"
                         opacity={filters.direction === "All" || filters.direction === entry.name ? 1 : 0.3}
+                        style={{ outline: 'none' }}
                       />
                     ))}
                   </Pie>
@@ -246,6 +245,7 @@ export default function Dashboard() {
                     contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                     formatter={(value: any) => `${value}%`}
                   />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#d4d4d8' }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (

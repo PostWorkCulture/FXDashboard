@@ -141,28 +141,42 @@ export default function TradesPage() {
           )}
         </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-zinc-800 flex items-center justify-between bg-zinc-900/50">
-            <span className="text-sm text-zinc-500">
-              Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedTrades.length)} of {sortedTrades.length} trades
-            </span>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="p-2 bg-zinc-800 rounded-md text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button 
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="p-2 bg-zinc-800 rounded-md text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <ChevronRight size={16} />
-              </button>
+        {/* Pagination & Stats */}
+        {sortedTrades.length > 0 && (
+          <div className="p-4 border-t border-zinc-800 flex flex-col md:flex-row md:items-center justify-between bg-zinc-900/50 gap-4">
+            <div className="flex flex-col md:flex-row md:items-center gap-4 text-sm">
+              <span className="text-zinc-500">
+                Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedTrades.length)} of {sortedTrades.length}
+              </span>
+              <div className="h-4 w-px bg-zinc-700 hidden md:block"></div>
+              <div className="flex items-center gap-3 text-zinc-300">
+                <span className="font-medium">Total: {sortedTrades.length}</span>
+                <span className="text-green-400">W: {sortedTrades.filter(t => t.pnl > 0).length}</span>
+                <span className="text-pink-400">L: {sortedTrades.filter(t => t.pnl <= 0).length}</span>
+                <span className="font-semibold text-white ml-1">
+                  {sortedTrades.length > 0 ? (sortedTrades.filter(t => t.pnl > 0).length / sortedTrades.length * 100).toFixed(1) : "0.0"}% Win
+                </span>
+              </div>
             </div>
+            
+            {totalPages > 1 && (
+              <div className="flex gap-2 shrink-0">
+                <button 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 bg-zinc-800 rounded-md text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <button 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 bg-zinc-800 rounded-md text-zinc-300 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

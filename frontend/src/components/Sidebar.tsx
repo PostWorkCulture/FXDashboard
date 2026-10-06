@@ -8,7 +8,8 @@ import {
   PieChart as PieChartIcon, 
   Settings,
   TrendingUp,
-  Calendar
+  Calendar,
+  Globe
 } from "lucide-react";
 
 export function Sidebar() {
@@ -31,6 +32,7 @@ export function Sidebar() {
         <NavItem href="/calendar" icon={<Calendar size={20} />} label="Calendar" active={pathname === "/calendar"} />
         <NavItem href="/summaries" icon={<TrendingUp size={20} />} label="Summaries" active={pathname === "/summaries"} />
         <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Detailed Reports" active={pathname === "/reports"} />
+        <NavItem href="/news" icon={<Globe size={20} />} label="News Calendar" active={pathname === "/news"} />
       </nav>
 
       <div className="p-4 border-t border-zinc-800">
