@@ -52,7 +52,7 @@ export default function Dashboard() {
       const date = t.exit_time.split(" ")[0];
       equityMap.set(date, current_equity);
     });
-    const equityCurve = Array.from(equityMap.entries()).map(([date, equity]) => ({ date, equity }));
+    const equityCurve = Array.from(equityMap.entries()).map(([date, equity]) => ({ date, equity: Math.round((equity as number) * 100) / 100 }));
 
     // Breakdowns
     const long_pnl = filteredTrades.filter(t => t.direction === "Long").reduce((sum, t) => sum + t.pnl, 0);
@@ -184,7 +184,7 @@ export default function Dashboard() {
                   tickLine={false}
                   axisLine={false}
                   domain={[minEq => Math.min(minEq, 10000), maxEq => Math.max(maxEq, 10000)]}
-                  tickFormatter={(value) => `$${value}`}
+                  tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
