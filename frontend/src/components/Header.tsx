@@ -10,9 +10,10 @@ export function Header() {
 
   const titleMap: Record<string, string> = {
     "/": "Overview",
-    "/calendar": "Calendar View",
-    "/trades": "Trade Log",
-    "/reports": "Detailed Reports",
+    "/calendar": "Calendar",
+    "/trades": "Trades",
+    "/reports": "Reports",
+    "/news": "News",
   };
   const title = titleMap[pathname] || "Dashboard";
 
@@ -49,6 +50,13 @@ export function Header() {
             </div>
             
             <div className="flex items-center gap-1">
+              <button 
+                onClick={() => setFilters(f => ({ ...f, symbol: "All" }))}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${filters.symbol === "All" ? "bg-zinc-800 text-white shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"}`}
+              >
+                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/all.jpg`} className={`w-5 h-5 rounded object-cover ${filters.symbol === "All" ? "ring-1 ring-blue-500 ring-offset-1 ring-offset-zinc-800" : ""}`} />
+                <span className="text-sm font-medium">All Pairs</span>
+              </button>
               <button 
                 onClick={() => togglePair("EURUSD")}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors ${filters.symbol === "EURUSD" ? "bg-zinc-800 text-white shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800 text-zinc-400 hover:text-white border border-transparent"}`}

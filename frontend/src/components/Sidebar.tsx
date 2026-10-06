@@ -28,11 +28,11 @@ export function Sidebar() {
       
       <nav className="flex-1 px-4 py-4 space-y-1">
         <NavItem href="/" icon={<LayoutDashboard size={20} />} label="Overview" active={pathname === "/"} />
-        <NavItem href="/trades" icon={<Wallet size={20} />} label="Trade Log" active={pathname === "/trades"} />
+        <NavItem href="/trades" icon={<Wallet size={20} />} label="Trades" active={pathname === "/trades"} />
         <NavItem href="/calendar" icon={<Calendar size={20} />} label="Calendar" active={pathname === "/calendar"} />
         <NavItem href="/summaries" icon={<TrendingUp size={20} />} label="Summaries" active={pathname === "/summaries"} />
-        <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Detailed Reports" active={pathname === "/reports"} />
-        <NavItem href="/news" icon={<Globe size={20} />} label="News Calendar" active={pathname === "/news"} />
+        <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Reports" active={pathname === "/reports"} />
+        <NavItem href="/news" icon={<Globe size={20} />} label="News" active={pathname === "/news"} />
       </nav>
     </aside>
   );
