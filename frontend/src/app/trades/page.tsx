@@ -44,7 +44,7 @@ export default function TradesPage() {
             <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-zinc-400 uppercase bg-zinc-900/50 border-b border-zinc-800">
                 <tr>
-                  <th className="px-6 py-4 font-medium align-top">Trade ID</th>
+                  <th className="px-6 py-4 font-medium align-top">Trades</th>
                   <th className="px-6 py-4 font-medium">
                     <div className="flex flex-col gap-2">
                       <span>Symbol</span>
@@ -76,7 +76,7 @@ export default function TradesPage() {
                   </th>
                   <th className="px-6 py-4 font-medium">
                     <div className="flex flex-col gap-2">
-                      <span>Entry Date</span>
+                      <span>Entry</span>
                       <select 
                         className="bg-zinc-800 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300 outline-none w-28"
                         value={filters.dateRange}
@@ -91,10 +91,10 @@ export default function TradesPage() {
                       </select>
                     </div>
                   </th>
-                  <th className="px-6 py-4 font-medium align-top">Exit Date</th>
+                  <th className="px-6 py-4 font-medium align-top">Exit</th>
                   <th className="px-6 py-4 font-medium align-top">Duration</th>
-                  <th className="px-6 py-4 font-medium align-top">Entry Price</th>
-                  <th className="px-6 py-4 font-medium align-top">Exit Price</th>
+                  <th className="px-6 py-4 font-medium align-top">Entry £</th>
+                  <th className="px-6 py-4 font-medium align-top">Exit £</th>
                   <th className="px-6 py-4 font-medium text-right align-top">P&L</th>
                 </tr>
               </thead>
