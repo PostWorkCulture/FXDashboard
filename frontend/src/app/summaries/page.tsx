@@ -169,13 +169,16 @@ export default function SummariesPage() {
         <h2 className="text-lg font-semibold text-white mb-4">Macroeconomic Analyst Brief</h2>
         <div className="space-y-4 text-zinc-300 leading-relaxed">
           <p>
-            <strong>USD Outlook:</strong> The Dollar remains supported as the market dials back expectations for aggressive rate cuts by the Federal Reserve. Recent hotter-than-expected inflation data and a resilient labor market suggest a "higher for longer" narrative. This fundamental strength acts as a persistent headwind for major currency pairs like EUR/USD, GBP/USD, and AUD/USD, reinforcing downside pressure in those markets.
+            <strong>USD Outlook:</strong> The Dollar remains firmly in focus as markets digest recent resilient labor data and await the FOMC minutes (Oct 7) and CPI release (Oct 14). Traders are currently looking for confirmation on whether inflation remains sticky, which will dictate the Federal Reserve's path for interest rates ahead of the pivotal Oct 28 FOMC Meeting.
           </p>
           <p>
-            <strong>GBP & EUR Divergence:</strong> The Bank of England is maintaining a cautiously hawkish stance compared to the ECB, which has explicitly signaled a rate cut path. As a result, GBP/USD is showing relative resilience compared to EUR/USD. However, domestic wage growth in the UK continues to pose sticky inflation risks, meaning any sudden shift in BoE rhetoric could trigger significant GBP volatility.
+            <strong>EUR Vulnerability:</strong> The Euro is currently facing intense downside pressure due to significant political and fiscal uncertainty, particularly regarding French debt markets and Italian government finances. With the ECB Monetary Policy Meeting Accounts due Oct 8 and the main ECB Meeting on Oct 29, investors are closely watching for any hawkish tone to anchor inflation expectations or emergency policy responses to the bond market sell-off.
           </p>
           <p>
-            <strong>AUD Headwinds:</strong> The Australian Dollar continues to be squeezed by sluggish economic data out of China, its largest trading partner, offsetting the Reserve Bank of Australia's somewhat hawkish hold on rates. For AUD/USD traders, monitoring iron ore prices and PBOC stimulus measures is just as critical as parsing US macro data.
+            <strong>GBP Resilience:</strong> Sterling is remaining relatively stable and is currently acting as a "safer" European bet amidst the turmoil in eurozone bond markets. The week is heavy on Bank of England communication, with several MPC members speaking to provide clues regarding the expected November rate decision.
+          </p>
+          <p>
+            <strong>AUD Headwinds:</strong> The Australian Dollar has seen limited high-impact data but remains under pressure from a combination of rising bond yields, falling domestic property prices, and general global "risk-off" sentiment. It remains highly sensitive to broader commodity prices and Chinese economic developments.
           </p>
         </div>
       </div>

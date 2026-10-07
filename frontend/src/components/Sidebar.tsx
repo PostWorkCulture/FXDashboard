@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, 
@@ -18,11 +19,15 @@ export function Sidebar() {
   return (
     <aside className="w-64 bg-zinc-900 border-r border-zinc-800 hidden md:flex flex-col h-screen sticky top-0">
       <div className="p-6">
-        <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight text-white hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 bg-green-500 rounded-lg flex items-center justify-center">
-            <TrendingUp className="w-5 h-5 text-zinc-950" />
-          </div>
-          PWC FX
+        <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
+          <Image 
+            src="/logo.jpg" 
+            alt="PWC FX" 
+            width={160} 
+            height={80} 
+            className="w-auto h-12 object-contain rounded"
+            priority
+          />
         </Link>
       </div>
       

@@ -4,15 +4,16 @@ import { FolderIcon, FolderOpen, Calendar as CalendarIcon, Clock } from "lucide-
 
 export default function NewsPage() {
   const newsEvents = [
-    { date: "Oct 06", time: "08:30 AM", currency: "USD", impact: "High", event: "Non-Farm Employment Change", actual: "254K", forecast: "147K", previous: "159K" },
-    { date: "Oct 06", time: "08:30 AM", currency: "USD", impact: "High", event: "Unemployment Rate", actual: "4.1%", forecast: "4.2%", previous: "4.2%" },
-    { date: "Oct 07", time: "02:00 AM", currency: "GBP", impact: "High", event: "BoE Gov Bailey Speaks", actual: "", forecast: "", previous: "" },
-    { date: "Oct 08", time: "01:00 AM", currency: "AUD", impact: "High", event: "RBA Meeting Minutes", actual: "", forecast: "", previous: "" },
-    { date: "Oct 09", time: "02:00 PM", currency: "USD", impact: "High", event: "FOMC Meeting Minutes", actual: "", forecast: "", previous: "" },
-    { date: "Oct 10", time: "08:30 AM", currency: "USD", impact: "High", event: "CPI m/m", actual: "", forecast: "0.1%", previous: "0.2%" },
-    { date: "Oct 10", time: "08:30 AM", currency: "USD", impact: "High", event: "Core CPI m/m", actual: "", forecast: "0.2%", previous: "0.3%" },
-    { date: "Oct 17", time: "08:15 AM", currency: "EUR", impact: "High", event: "Main Refinancing Rate", actual: "", forecast: "3.40%", previous: "3.65%" },
-    { date: "Oct 17", time: "08:45 AM", currency: "EUR", impact: "High", event: "ECB Press Conference", actual: "", forecast: "", previous: "" },
+    { date: "Oct 07", time: "02:00 PM", currency: "USD", impact: "High", event: "FOMC Meeting Minutes", actual: "", forecast: "", previous: "" },
+    { date: "Oct 08", time: "09:30 AM", currency: "GBP", impact: "High", event: "BoE Credit Conditions Survey", actual: "", forecast: "", previous: "" },
+    { date: "Oct 08", time: "12:30 PM", currency: "EUR", impact: "High", event: "ECB Monetary Policy Meeting Accounts", actual: "", forecast: "", previous: "" },
+    { date: "Oct 09", time: "03:00 PM", currency: "USD", impact: "High", event: "U. of Michigan Consumer Sentiment (Prelim)", actual: "", forecast: "70.5", previous: "70.1" },
+    { date: "Oct 14", time: "01:30 PM", currency: "USD", impact: "High", event: "CPI m/m & y/y", actual: "", forecast: "0.2%", previous: "0.2%" },
+    { date: "Oct 14", time: "07:00 PM", currency: "USD", impact: "High", event: "Fed Beige Book", actual: "", forecast: "", previous: "" },
+    { date: "Oct 15", time: "10:00 AM", currency: "EUR", impact: "High", event: "Industrial Production & Trade Balance", actual: "", forecast: "", previous: "" },
+    { date: "Oct 15", time: "01:30 PM", currency: "USD", impact: "High", event: "Retail Sales & Core PPI", actual: "", forecast: "0.3%", previous: "0.1%" },
+    { date: "Oct 28", time: "07:00 PM", currency: "USD", impact: "High", event: "Federal Reserve (FOMC) Meeting", actual: "", forecast: "4.75%", previous: "5.00%" },
+    { date: "Oct 29", time: "01:15 PM", currency: "EUR", impact: "High", event: "European Central Bank (ECB) Meeting", actual: "", forecast: "3.25%", previous: "3.50%" },
   ];
 
   return (
