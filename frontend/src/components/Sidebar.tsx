@@ -13,6 +13,8 @@ import {
   Globe
 } from "lucide-react";
 
+import logoImg from "../../public/icons/logo.jpg";
+
 export function Sidebar() {
   const pathname = usePathname();
 
@@ -20,10 +22,11 @@ export function Sidebar() {
     <aside className="w-64 bg-zinc-900 border-r border-zinc-800 hidden md:flex flex-col h-screen sticky top-0">
       <div className="p-6">
         <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-          <img 
-            src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/logo.jpg?v=2`}
+          <Image 
+            src={logoImg}
             alt="PWC FX" 
             className="w-auto h-12 object-contain rounded"
+            priority
           />
         </Link>
       </div>
