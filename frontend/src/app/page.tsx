@@ -32,7 +32,7 @@ const COLORS = ['#22c55e', '#ec4899', '#3b82f6', '#f59e0b', '#8b5cf6'];
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function Dashboard() {
-  const { filteredTrades, isLoading, filters, setFilters } = useData();
+  const { rawTrades, filteredTrades, isLoading, filters, setFilters } = useData();
   const router = useRouter();
 
   const data = useMemo(() => {
@@ -131,8 +131,76 @@ export default function Dashboard() {
     }
   };
 
+  const now = new Date();
+  const currentOrRecentTrades = useMemo(() => {
+    return rawTrades.filter(t => {
+      if (t.status === "open") return true;
+      if (t.status === "closed" && t.exit_time) {
+        const exitDate = new Date(t.exit_time.replace(" ", "T"));
+        const diffHours = (now.getTime() - exitDate.getTime()) / (1000 * 60 * 60);
+        return diffHours <= 48; // closed within 2 days
+      }
+      return false;
+    }).sort((a, b) => {
+      if (a.status === "open" && b.status !== "open") return -1;
+      if (a.status !== "open" && b.status === "open") return 1;
+      return new Date(b.entry_time.replace(" ", "T")).getTime() - new Date(a.entry_time.replace(" ", "T")).getTime();
+    });
+  }, [rawTrades]);
+
   return (
     <div className="space-y-8 pb-8">
+      {/* Current / Recent Trades */}
+      {currentOrRecentTrades.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold text-white">Current & Recent Trades</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {currentOrRecentTrades.map(trade => (
+              <div key={trade.id} className={`p-6 rounded-xl border ${trade.status === 'open' ? 'bg-zinc-900 border-green-500/50 shadow-[0_0_15px_rgba(34,197,94,0.15)]' : 'bg-zinc-900/80 border-zinc-800'} flex flex-col gap-4`}>
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <span className="font-bold text-lg text-white">{trade.symbol}</span>
+                    <span className={`px-2 py-0.5 rounded text-xs font-semibold ${trade.direction === 'Long' ? 'bg-green-500/20 text-green-500' : 'bg-pink-500/20 text-pink-500'}`}>{trade.direction}</span>
+                  </div>
+                  {trade.status === 'open' ? (
+                    <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-500 text-xs font-bold uppercase tracking-wider flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-yellow-500 animate-pulse"></span> Open</span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-400 text-xs font-bold uppercase tracking-wider">Closed</span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <div className="text-zinc-500 mb-1">Entry Price</div>
+                    <div className="font-medium text-white">{trade.entry_price}</div>
+                  </div>
+                  <div>
+                    <div className="text-zinc-500 mb-1">Entry Date</div>
+                    <div className="font-medium text-white">{trade.entry_time}</div>
+                  </div>
+                </div>
+
+                <div className="bg-zinc-950 p-4 rounded-lg text-sm border border-zinc-800/50">
+                  <div className="text-zinc-500 mb-1 text-xs uppercase tracking-wider">Trigger Reason</div>
+                  <div className="text-zinc-300">{trade.trigger_reason || trade.setup || "System execution"}</div>
+                </div>
+
+                {trade.status === 'closed' && (
+                  <div className="bg-zinc-950 p-4 rounded-lg text-sm border border-zinc-800/50 flex flex-col h-full">
+                    <div className="text-zinc-500 mb-1 text-xs uppercase tracking-wider">Exit Reason</div>
+                    <div className="text-zinc-300 flex-1">{trade.exit_reason || "Position closed."}</div>
+                    <div className="mt-4 flex justify-between items-center pt-3 border-t border-zinc-800/50">
+                      <span className="text-zinc-500 text-xs uppercase tracking-wider">Final P&L</span>
+                      <span className={`font-bold ${trade.pnl > 0 ? 'text-green-500' : 'text-pink-500'}`}>${trade.pnl.toFixed(2)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard 

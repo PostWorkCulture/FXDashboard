@@ -18,6 +18,9 @@ export interface Trade {
   mfe_pips?: number;
   r_multiple?: number;
   setup?: string;
+  trigger_reason?: string;
+  exit_reason?: string;
+  status?: "open" | "closed";
   mistakes?: string;
   notes?: string;
 }

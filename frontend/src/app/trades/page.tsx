@@ -105,7 +105,10 @@ export default function TradesPage() {
                     onClick={() => setSelectedTrade(trade)}
                     className={`hover:bg-zinc-800/50 transition-colors cursor-pointer ${selectedTrade?.id === trade.id ? "bg-zinc-800/80" : ""}`}
                   >
-                    <td className="px-6 py-4 text-zinc-500 font-mono">#{trade.id}</td>
+                    <td className="px-6 py-4 text-zinc-500 font-mono">
+                      #{trade.id}
+                      {trade.status === 'open' && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse" title="Open Trade"></span>}
+                    </td>
                     <td className="px-6 py-4 font-medium">{trade.symbol}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2 py-1 rounded-md text-xs font-medium ${
@@ -115,7 +118,7 @@ export default function TradesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-zinc-400">{trade.entry_time.split(".")[0]}</td>
-                    <td className="px-6 py-4 text-zinc-400">{trade.exit_time.split(".")[0]}</td>
+                    <td className="px-6 py-4 text-zinc-400">{trade.exit_time ? trade.exit_time.split(".")[0] : "-"}</td>
                     <td className="px-6 py-4 text-zinc-400">
                       {trade.duration_hours ? (
                         trade.duration_hours >= 24 
@@ -124,11 +127,11 @@ export default function TradesPage() {
                       ) : '-'}
                     </td>
                     <td className="px-6 py-4 text-zinc-400 font-mono">{trade.entry_price.toFixed(5)}</td>
-                    <td className="px-6 py-4 text-zinc-400 font-mono">{trade.exit_price.toFixed(5)}</td>
+                    <td className="px-6 py-4 text-zinc-400 font-mono">{trade.exit_price ? trade.exit_price.toFixed(5) : "-"}</td>
                     <td className={`px-6 py-4 text-right font-medium font-mono ${
-                      trade.is_win ? "text-green-500" : "text-pink-500"
+                      trade.pnl >= 0 ? "text-green-500" : "text-pink-500"
                     }`}>
-                      {trade.pnl > 0 ? "+" : ""}${trade.pnl.toFixed(2)}
+                      {trade.pnl >= 0 ? "+" : ""}${Math.abs(trade.pnl).toFixed(2)}
                     </td>
                   </tr>
                 ))}
@@ -220,12 +223,22 @@ export default function TradesPage() {
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">Exit Price</div>
-                <div className="font-mono text-white">{selectedTrade.exit_price.toFixed(5)}</div>
-                <div className="text-xs text-zinc-600 mt-1">{selectedTrade.exit_time.split(" ")[1].split(".")[0]}</div>
+                <div className="font-mono text-white">{selectedTrade.exit_price ? selectedTrade.exit_price.toFixed(5) : "-"}</div>
+                <div className="text-xs text-zinc-600 mt-1">{selectedTrade.exit_time ? selectedTrade.exit_time.split(" ")[1].split(".")[0] : "Open"}</div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm bg-zinc-950 p-4 rounded-lg border border-zinc-800/50">
+              <div className="col-span-2 mb-2 pb-2 border-b border-zinc-800/50">
+                <div className="text-zinc-500 mb-1">Trigger Reason</div>
+                <div className="font-medium text-white">{selectedTrade.trigger_reason || "-"}</div>
+              </div>
+              {selectedTrade.status === "closed" && (
+                <div className="col-span-2 mb-2 pb-2 border-b border-zinc-800/50">
+                  <div className="text-zinc-500 mb-1">Exit Reason</div>
+                  <div className="font-medium text-white">{selectedTrade.exit_reason || "-"}</div>
+                </div>
+              )}
               <div>
                 <div className="text-zinc-500 mb-1">Duration</div>
                 <div className="font-medium text-white">
@@ -242,11 +255,11 @@ export default function TradesPage() {
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">Max Favorable</div>
-                <div className="font-medium text-green-500">+{selectedTrade.mfe_pips?.toFixed(1) || "-"} pips</div>
+                <div className="font-medium text-green-500">{selectedTrade.mfe_pips ? `+${selectedTrade.mfe_pips.toFixed(1)}` : "-"} pips</div>
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">Max Adverse</div>
-                <div className="font-medium text-pink-500">-{selectedTrade.mae_pips?.toFixed(1) || "-"} pips</div>
+                <div className="font-medium text-pink-500">{selectedTrade.mae_pips ? `-${selectedTrade.mae_pips.toFixed(1)}` : "-"} pips</div>
               </div>
             </div>
 
