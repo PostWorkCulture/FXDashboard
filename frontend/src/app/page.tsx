@@ -111,6 +111,23 @@ export default function Dashboard() {
     };
   }, [filteredTrades]);
 
+  const now = new Date();
+  const currentOrRecentTrades = useMemo(() => {
+    return rawTrades.filter(t => {
+      if (t.status === "open") return true;
+      if (t.status === "closed" && t.exit_time) {
+        const exitDate = new Date(t.exit_time.replace(" ", "T"));
+        const diffHours = (now.getTime() - exitDate.getTime()) / (1000 * 60 * 60);
+        return diffHours <= 48; // closed within 2 days
+      }
+      return false;
+    }).sort((a, b) => {
+      if (a.status === "open" && b.status !== "open") return -1;
+      if (a.status !== "open" && b.status === "open") return 1;
+      return new Date(b.entry_time.replace(" ", "T")).getTime() - new Date(a.entry_time.replace(" ", "T")).getTime();
+    });
+  }, [rawTrades]);
+
   if (isLoading) {
     return <div className="flex h-full items-center justify-center text-zinc-500">Loading data...</div>;
   }
@@ -133,23 +150,6 @@ export default function Dashboard() {
       router.push("/trades");
     }
   };
-
-  const now = new Date();
-  const currentOrRecentTrades = useMemo(() => {
-    return rawTrades.filter(t => {
-      if (t.status === "open") return true;
-      if (t.status === "closed" && t.exit_time) {
-        const exitDate = new Date(t.exit_time.replace(" ", "T"));
-        const diffHours = (now.getTime() - exitDate.getTime()) / (1000 * 60 * 60);
-        return diffHours <= 48; // closed within 2 days
-      }
-      return false;
-    }).sort((a, b) => {
-      if (a.status === "open" && b.status !== "open") return -1;
-      if (a.status !== "open" && b.status === "open") return 1;
-      return new Date(b.entry_time.replace(" ", "T")).getTime() - new Date(a.entry_time.replace(" ", "T")).getTime();
-    });
-  }, [rawTrades]);
 
   return (
     <div className="space-y-8 pb-8">

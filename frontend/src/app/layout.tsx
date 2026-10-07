@@ -27,16 +27,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            window.onerror = function(msg, url, line, col, error) {
-              document.body.innerHTML = '<div style="color:red;padding:20px;background:black;z-index:9999;position:fixed;top:0;left:0;right:0;bottom:0;overflow:auto;"><h1>Crash!</h1><pre>' + msg + '\\n' + (error && error.stack) + '</pre></div>';
-              return false;
-            };
-          `
-        }} />
-      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-zinc-950 text-white`}>
         <DataProvider>
           <div className="flex h-screen overflow-hidden">
