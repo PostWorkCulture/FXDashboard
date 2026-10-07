@@ -25,7 +25,7 @@ export function Sidebar() {
           <Image 
             src={logoImg}
             alt="PWC FX" 
-            className="w-auto h-12 object-contain rounded"
+            className="w-auto h-12 object-contain rounded mix-blend-screen"
             priority
           />
         </Link>
