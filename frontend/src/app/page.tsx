@@ -49,9 +49,12 @@ export default function Dashboard() {
     // Equity Curve
     let current_equity = 10000.0;
     const equityMap = new Map();
-    [...filteredTrades].sort((a, b) => new Date(a.exit_time).getTime() - new Date(b.exit_time).getTime()).forEach(t => {
+    [...filteredTrades]
+      .filter(t => t.exit_time)
+      .sort((a, b) => new Date(a.exit_time as string).getTime() - new Date(b.exit_time as string).getTime())
+      .forEach(t => {
       current_equity += t.pnl;
-      const date = t.exit_time.split(" ")[0];
+      const date = (t.exit_time as string).split(" ")[0];
       equityMap.set(date, current_equity);
     });
     const equityCurve = Array.from(equityMap.entries()).map(([date, equity]) => ({ date, equity: Math.round((equity as number) * 100) / 100 }));

@@ -29,14 +29,17 @@ export default function ReportsPage() {
     let peak_equity = 10000.0;
     const drawdownCurve: any[] = [];
     
-    [...filteredTrades].sort((a, b) => new Date(a.exit_time).getTime() - new Date(b.exit_time).getTime()).forEach(t => {
+    [...filteredTrades]
+      .filter(t => t.exit_time)
+      .sort((a, b) => new Date(a.exit_time as string).getTime() - new Date(b.exit_time as string).getTime())
+      .forEach(t => {
       current_equity += t.pnl;
       if (current_equity > peak_equity) {
         peak_equity = current_equity;
       }
       const drawdown = peak_equity > 0 ? ((current_equity - peak_equity) / peak_equity) * 100 : 0;
       
-      const date = t.exit_time.split(" ")[0];
+      const date = (t.exit_time as string).split(" ")[0];
       // Only keep max drawdown for a day to smooth the chart
       const existing = drawdownCurve.find(d => d.date === date);
       if (existing) {
