@@ -20,13 +20,10 @@ export function Sidebar() {
     <aside className="w-64 bg-zinc-900 border-r border-zinc-800 hidden md:flex flex-col h-screen sticky top-0">
       <div className="p-6">
         <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-          <Image 
-            src="/logo.jpg" 
+          <img 
+            src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/logo.jpg?v=2`}
             alt="PWC FX" 
-            width={160} 
-            height={80} 
             className="w-auto h-12 object-contain rounded"
-            priority
           />
         </Link>
       </div>
