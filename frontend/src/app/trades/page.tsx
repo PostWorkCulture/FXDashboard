@@ -91,6 +91,7 @@ export default function TradesPage() {
                       </select>
                     </div>
                   </th>
+                  <th className="px-6 py-4 font-medium align-top">Day</th>
                   <th className="px-6 py-4 font-medium align-top">Exit</th>
                   <th className="px-6 py-4 font-medium align-top">Duration</th>
                   <th className="px-6 py-4 font-medium align-top">Entry £</th>
@@ -99,7 +100,11 @@ export default function TradesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800">
-                {currentTrades.map((trade) => (
+                {currentTrades.map((trade) => {
+                  const entryDate = new Date(trade.entry_time.replace(" ", "T"));
+                  const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                  const dayName = days[entryDate.getDay()];
+                  return (
                   <tr 
                     key={trade.id} 
                     onClick={() => setSelectedTrade(trade)}
@@ -118,6 +123,7 @@ export default function TradesPage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-zinc-400">{trade.entry_time.split(".")[0]}</td>
+                    <td className="px-6 py-4 text-zinc-400">{dayName}</td>
                     <td className="px-6 py-4 text-zinc-400">{trade.exit_time ? trade.exit_time.split(".")[0] : "-"}</td>
                     <td className="px-6 py-4 text-zinc-400">
                       {trade.duration_hours ? (
@@ -134,7 +140,8 @@ export default function TradesPage() {
                       {trade.pnl >= 0 ? "+" : ""}${Math.abs(trade.pnl).toFixed(2)}
                     </td>
                   </tr>
-                ))}
+                );
+              })}
               </tbody>
             </table>
           ) : (
