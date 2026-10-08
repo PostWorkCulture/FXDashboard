@@ -16,9 +16,10 @@ export default function PropPage() {
       description: "Steady, highly liquid behavior makes EURUSD ideal for consistent, low-drawdown prop challenges.",
       color: "blue",
       algoRules: [
-        "RSI (14) crosses below 30 (Long) or above 70 (Short) on H1 timeframe.",
-        "Price interacting with a major Daily Support/Resistance level.",
-        "MACD histogram shows divergence against the primary trend."
+        "Falling Knife Entry: H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
+        "Risk/Reward: Strictly 1:2 ratio (40 pips SL / 80 pips TP).",
+        "Time Filters: Blocks trading on Tue/Wed and at 09:00, 13:00, 22:00.",
+        "News Filter: Pre-emptive abort on USD/EUR Red Folder events (5%ers compliant)."
       ]
     },
     {
@@ -30,9 +31,10 @@ export default function PropPage() {
       description: "Higher volatility yields larger percentage returns but requires slightly wider stops and patience.",
       color: "pink",
       algoRules: [
-        "Breakout of Asian Session range immediately following London Open.",
-        "EMA (20 & 50) crossover confirmed on M15 timeframe.",
-        "Execution volume spike exceeds 1.5x the 20-period moving average."
+        "Falling Knife Entry: H1 RSI (14) crosses below 30 (Long) or above 70 (Short).",
+        "Risk/Reward: Strictly 1:2 ratio (80 pips SL / 160 pips TP).",
+        "Time Filters: Blocks trading on Wed/Fri and at 02:00, 10:00, 14:00.",
+        "News Filter: Pre-emptive abort on USD/GBP Red Folder events (5%ers compliant)."
       ]
     },
     {
@@ -44,9 +46,10 @@ export default function PropPage() {
       description: "Slower trends and Asian session overlap require a longer timeline to pass standard prop firm parameters.",
       color: "green",
       algoRules: [
-        "Commodity Channel Index (CCI) reaches <-100 or >+100.",
-        "Price closes outside the Bollinger Band (20, 2) extremes.",
-        "Trade confirmation via engulfing candlestick pattern on H4."
+        "Falling Knife Entry: H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
+        "Risk/Reward: Strictly 1:2 ratio (50 pips SL / 100 pips TP).",
+        "Time Filters: Blocks trading on Tue/Wed and at 07:00, 09:00, 13:00, 16:00, 21:00, 22:00.",
+        "News Filter: Pre-emptive abort on USD/AUD Red Folder events (5%ers compliant)."
       ]
     }
   ];
