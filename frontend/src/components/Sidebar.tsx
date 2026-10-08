@@ -33,8 +33,8 @@ export function Sidebar() {
         <NavItem href="/" icon={<LayoutDashboard size={20} />} label="Overview" active={pathname === "/"} />
         <NavItem href="/summaries" icon={<TrendingUp size={20} />} label="Summaries" active={pathname === "/summaries"} />
         <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Reports" active={pathname === "/reports"} />
-        <NavItem href="/news" icon={<Globe size={20} />} label="News" active={pathname === "/news"} />
         <NavItem href="/prop" icon={<Trophy size={20} />} label="Prop" active={pathname === "/prop"} />
+        <NavItem href="/news" icon={<Globe size={20} />} label="News" active={pathname === "/news"} />
       </nav>
     </aside>
   );

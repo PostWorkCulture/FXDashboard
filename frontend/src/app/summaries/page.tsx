@@ -105,7 +105,7 @@ export default function SummariesPage() {
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-white mb-4">Current Month Update ({currentMonth.name})</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">This Month</h2>
         <p className="text-zinc-300 leading-relaxed">
           So far in <button onClick={() => handleFilterNav({ dateRange: "This Month" })} className="text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors">{currentMonth.name}</button>, the strategy has taken <strong className="text-white">{currentMonth.trades}</strong> trades, 
           generating a net P&L of <strong className={currentMonth.pnl >= 0 ? "text-green-500" : "text-pink-500"}>
@@ -119,7 +119,7 @@ export default function SummariesPage() {
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-white mb-4">Strategic Optimizations & Trends</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">Trends</h2>
         <ul className="space-y-4 text-zinc-300 leading-relaxed list-disc list-inside">
           <li>
             <strong>Day of Week Bias:</strong> The algorithm performs best on <button onClick={() => handleFilterNav({ dayOfWeek: bestDay.idx })} className="text-white font-medium underline decoration-zinc-500 underline-offset-4 hover:decoration-white transition-colors">{bestDay.name}s</button> (${bestDay.pnl.toFixed(2)} Net P&L). 
@@ -166,7 +166,7 @@ export default function SummariesPage() {
       </div>
 
       <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold text-white mb-4">Macroeconomic Analyst Brief</h2>
+        <h2 className="text-lg font-semibold text-white mb-4">News Brief</h2>
         <div className="space-y-4 text-zinc-300 leading-relaxed">
           <p>
             <strong>USD Outlook (Oct 8, 2026):</strong> The Dollar maintains a very strong tone amid rising Treasury yields. Recent Initial Jobless Claims printed at 200K vs 197K expected, remaining historically low. The market continues to view the USD favorably due to its strong structural position ahead of further FOMC signals.
@@ -185,4 +185,5 @@ export default function SummariesPage() {
     </div>
   );
 }
+
 
