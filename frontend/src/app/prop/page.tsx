@@ -14,7 +14,12 @@ export default function PropPage() {
       target: "8% Phase 1 / 5% Phase 2",
       fundedPayout: "4% Monthly",
       description: "Steady, highly liquid behavior makes EURUSD ideal for consistent, low-drawdown prop challenges.",
-      color: "blue"
+      color: "blue",
+      algoRules: [
+        "RSI (14) crosses below 30 (Long) or above 70 (Short) on H1 timeframe.",
+        "Price interacting with a major Daily Support/Resistance level.",
+        "MACD histogram shows divergence against the primary trend."
+      ]
     },
     {
       pair: "GBPUSD",
@@ -23,7 +28,12 @@ export default function PropPage() {
       target: "8% Phase 1 / 5% Phase 2",
       fundedPayout: "5% Monthly",
       description: "Higher volatility yields larger percentage returns but requires slightly wider stops and patience.",
-      color: "pink"
+      color: "pink",
+      algoRules: [
+        "Breakout of Asian Session range immediately following London Open.",
+        "EMA (20 & 50) crossover confirmed on M15 timeframe.",
+        "Execution volume spike exceeds 1.5x the 20-period moving average."
+      ]
     },
     {
       pair: "AUDUSD",
@@ -32,7 +42,12 @@ export default function PropPage() {
       target: "8% Phase 1 / 5% Phase 2",
       fundedPayout: "3.5% Monthly",
       description: "Slower trends and Asian session overlap require a longer timeline to pass standard prop firm parameters.",
-      color: "green"
+      color: "green",
+      algoRules: [
+        "Commodity Channel Index (CCI) reaches <-100 or >+100.",
+        "Price closes outside the Bollinger Band (20, 2) extremes.",
+        "Trade confirmation via engulfing candlestick pattern on H4."
+      ]
     }
   ];
 
@@ -113,6 +128,18 @@ export default function PropPage() {
 
               <div className="mt-auto pt-4 border-t border-zinc-800/50 text-sm text-zinc-400 leading-relaxed">
                 {intel.description}
+              </div>
+
+              <div className="pt-4 border-t border-zinc-800/50">
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Algo Entry Rules</h4>
+                <ul className="space-y-2">
+                  {intel.algoRules.map((rule, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
+                      <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-1.5 shrink-0"></div>
+                      <span>{rule}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
 
             </div>
