@@ -51,36 +51,38 @@ export function Header() {
               </button>
             </div>
             
-            <div className="flex items-center gap-2 px-1">
+            <div className="flex items-center gap-1 px-1">
               <button 
                 onClick={() => setFilters(f => ({ ...f, symbol: "All" }))}
-                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "All" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
-                title="All Pairs"
+                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
+                  filters.symbol === "All" ? "bg-zinc-800 text-white shadow drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" : "text-zinc-400 hover:text-white"
+                }`}
               >
-                <div className={`w-16 h-16 rounded-md overflow-hidden ${filters.symbol === "All" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`}>
-                  <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/all.jpg`} className="w-full h-full object-cover scale-[1.35] brightness-125 contrast-125 mix-blend-screen" />
-                </div>
+                ALL
               </button>
               <button 
                 onClick={() => togglePair("EURUSD")}
-                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "EURUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
-                title="EURUSD"
+                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
+                  filters.symbol === "EURUSD" ? "bg-zinc-800 text-blue-400 shadow drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-zinc-400 hover:text-white"
+                }`}
               >
-                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/eurusd.jpg`} className={`w-16 h-16 rounded-md object-cover brightness-125 contrast-125 mix-blend-screen ${filters.symbol === "EURUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
+                EURUSD
               </button>
               <button 
                 onClick={() => togglePair("GBPUSD")}
-                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "GBPUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
-                title="GBPUSD"
+                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
+                  filters.symbol === "GBPUSD" ? "bg-zinc-800 text-pink-400 shadow drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]" : "text-zinc-400 hover:text-white"
+                }`}
               >
-                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/gbpusd.jpg`} className={`w-16 h-16 rounded-md object-cover brightness-125 contrast-125 mix-blend-screen ${filters.symbol === "GBPUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
+                GBPUSD
               </button>
               <button 
                 onClick={() => togglePair("AUDUSD")}
-                className={`p-1 rounded-lg transition-all hover:scale-105 ${filters.symbol === "AUDUSD" ? "bg-zinc-800 shadow-sm border border-zinc-700/50" : "hover:bg-zinc-800/50 border border-transparent"}`}
-                title="AUDUSD"
+                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
+                  filters.symbol === "AUDUSD" ? "bg-zinc-800 text-green-400 shadow drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]" : "text-zinc-400 hover:text-white"
+                }`}
               >
-                <img src={`${process.env.NODE_ENV === "production" ? "/FXDashboard" : ""}/icons/audusd.jpg`} className={`w-16 h-16 rounded-md object-cover brightness-125 contrast-125 mix-blend-screen ${filters.symbol === "AUDUSD" ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-zinc-900" : ""}`} />
+                AUDUSD
               </button>
             </div>
           </div>

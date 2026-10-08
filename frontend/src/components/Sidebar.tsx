@@ -22,12 +22,10 @@ export function Sidebar() {
     <aside className="w-64 bg-zinc-900 border-r border-zinc-800 hidden md:flex flex-col h-screen sticky top-0">
       <div className="p-6">
         <Link href="/" className="flex items-center hover:opacity-80 transition-opacity">
-          <Image 
-            src={logoImg}
-            alt="PWC FX" 
-            className="w-auto h-12 object-contain rounded mix-blend-screen"
-            priority
-          />
+          <div className="text-3xl font-black tracking-tighter">
+            <span className="text-white">PWC</span>
+            <span className="text-lime-400 drop-shadow-[0_0_8px_rgba(163,230,53,0.5)]">fx</span>
+          </div>
         </Link>
       </div>
       
