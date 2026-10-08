@@ -169,19 +169,20 @@ export default function SummariesPage() {
         <h2 className="text-lg font-semibold text-white mb-4">Macroeconomic Analyst Brief</h2>
         <div className="space-y-4 text-zinc-300 leading-relaxed">
           <p>
-            <strong>USD Outlook:</strong> The Dollar remains firmly in focus as markets digest recent resilient labor data and await the FOMC minutes (Oct 7) and CPI release (Oct 14). Traders are currently looking for confirmation on whether inflation remains sticky, which will dictate the Federal Reserve's path for interest rates ahead of the pivotal Oct 28 FOMC Meeting.
+            <strong>USD Outlook (Oct 8, 2026):</strong> The Dollar maintains a very strong tone amid rising Treasury yields. Recent Initial Jobless Claims printed at 200K vs 197K expected, remaining historically low. The market continues to view the USD favorably due to its strong structural position ahead of further FOMC signals.
           </p>
           <p>
-            <strong>EUR Vulnerability:</strong> The Euro is currently facing intense downside pressure due to significant political and fiscal uncertainty, particularly regarding French debt markets and Italian government finances. With the ECB Monetary Policy Meeting Accounts due Oct 8 and the main ECB Meeting on Oct 29, investors are closely watching for any hawkish tone to anchor inflation expectations or emergency policy responses to the bond market sell-off.
+            <strong>EUR Vulnerability:</strong> EUR/USD remains under persistent pressure, holding below its 20-day EMA at 1.1376. Traders are eyeing the 1.1160–1.1200 support zone. The German Trade Balance slightly underperformed (19.0B vs 21.3B forecast), and RSI readings are in oversold territory (25-37), hinting at a potential pause in the sell-off but lacking reversal confirmation.
           </p>
           <p>
-            <strong>GBP Resilience:</strong> Sterling is remaining relatively stable and is currently acting as a "safer" European bet amidst the turmoil in eurozone bond markets. The week is heavy on Bank of England communication, with several MPC members speaking to provide clues regarding the expected November rate decision.
+            <strong>GBP Resistance:</strong> GBP/USD is exhibiting a bearish near-term tone and is currently in a corrective phase. Rallies are being heavily capped by resistance zones (1.3270–1.3300). Immediate support lies at 1.3180, and a decisive break could expose 1.3104.
           </p>
           <p>
-            <strong>AUD Headwinds:</strong> The Australian Dollar has seen limited high-impact data but remains under pressure from a combination of rising bond yields, falling domestic property prices, and general global "risk-off" sentiment. It remains highly sensitive to broader commodity prices and Chinese economic developments.
+            <strong>AUD Headwinds:</strong> AUD/USD is experiencing fresh downside pressure, retreating back toward the low 0.6900s after failing to sustain a three-day rally. With the ADX showing declining momentum, the focus remains on the 0.6900 floor before any further leg down.
           </p>
         </div>
       </div>
     </div>
   );
 }
+

@@ -4,16 +4,16 @@ import { FolderIcon, FolderOpen, Calendar as CalendarIcon, Clock } from "lucide-
 
 export default function NewsPage() {
   const newsEvents = [
-    { date: "Oct 07", time: "02:00 PM", currency: "USD", impact: "High", event: "FOMC Meeting Minutes", actual: "", forecast: "", previous: "" },
-    { date: "Oct 08", time: "09:30 AM", currency: "GBP", impact: "High", event: "BoE Credit Conditions Survey", actual: "", forecast: "", previous: "" },
-    { date: "Oct 08", time: "12:30 PM", currency: "EUR", impact: "High", event: "ECB Monetary Policy Meeting Accounts", actual: "", forecast: "", previous: "" },
+    { date: "Oct 07", time: "02:00 PM", currency: "USD", impact: "High", event: "FOMC Meeting Minutes", actual: "Released", forecast: "", previous: "" },
+    { date: "Oct 08", time: "07:00 AM", currency: "EUR", impact: "Medium", event: "German Trade Balance", actual: "19.0B", forecast: "21.3B", previous: "20.0B" },
+    { date: "Oct 08", time: "09:30 AM", currency: "GBP", impact: "High", event: "BoE Credit Conditions Survey", actual: "Released", forecast: "", previous: "" },
+    { date: "Oct 08", time: "12:30 PM", currency: "EUR", impact: "High", event: "ECB Monetary Policy Meeting Accounts", actual: "Released", forecast: "", previous: "" },
+    { date: "Oct 08", time: "01:30 PM", currency: "USD", impact: "High", event: "Unemployment Claims", actual: "200K", forecast: "197K", previous: "202K" },
+    { date: "Oct 08", time: "03:00 PM", currency: "USD", impact: "Medium", event: "Final Wholesale Inventories m/m", actual: "0.7%", forecast: "0.7%", previous: "0.6%" },
     { date: "Oct 09", time: "03:00 PM", currency: "USD", impact: "High", event: "U. of Michigan Consumer Sentiment (Prelim)", actual: "", forecast: "70.5", previous: "70.1" },
     { date: "Oct 14", time: "01:30 PM", currency: "USD", impact: "High", event: "CPI m/m & y/y", actual: "", forecast: "0.2%", previous: "0.2%" },
-    { date: "Oct 14", time: "07:00 PM", currency: "USD", impact: "High", event: "Fed Beige Book", actual: "", forecast: "", previous: "" },
-    { date: "Oct 15", time: "10:00 AM", currency: "EUR", impact: "High", event: "Industrial Production & Trade Balance", actual: "", forecast: "", previous: "" },
     { date: "Oct 15", time: "01:30 PM", currency: "USD", impact: "High", event: "Retail Sales & Core PPI", actual: "", forecast: "0.3%", previous: "0.1%" },
     { date: "Oct 28", time: "07:00 PM", currency: "USD", impact: "High", event: "Federal Reserve (FOMC) Meeting", actual: "", forecast: "4.75%", previous: "5.00%" },
-    { date: "Oct 29", time: "01:15 PM", currency: "EUR", impact: "High", event: "European Central Bank (ECB) Meeting", actual: "", forecast: "3.25%", previous: "3.50%" },
   ];
 
   return (
