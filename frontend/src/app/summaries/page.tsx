@@ -169,21 +169,23 @@ export default function SummariesPage() {
         <h2 className="text-lg font-semibold text-white mb-4">News Brief</h2>
         <div className="space-y-4 text-zinc-300 leading-relaxed">
           <p>
-            <strong>USD Outlook (Oct 8, 2026):</strong> The Dollar maintains a very strong tone amid rising Treasury yields. Recent Initial Jobless Claims printed at 200K vs 197K expected, remaining historically low. The market continues to view the USD favorably due to its strong structural position ahead of further FOMC signals.
+                        <strong>USD Dominance (Oct 9, 2026):</strong> The US Dollar remains the primary driver across major pairs, supported by elevated bond yields and persistent inflation concerns. Traders are heavily focused on today's Prelim UoM Consumer Sentiment release and comments from FOMC member Collins.
           </p>
           <p>
-            <strong>EUR Vulnerability:</strong> EUR/USD remains under persistent pressure, holding below its 20-day EMA at 1.1376. Traders are eyeing the 1.1160–1.1200 support zone. The German Trade Balance slightly underperformed (19.0B vs 21.3B forecast), and RSI readings are in oversold territory (25-37), hinting at a potential pause in the sell-off but lacking reversal confirmation.
+            <strong>EUR/USD Consolidation:</strong> Bearish momentum is showing signs of a potential short-term pause. While EUR/USD recently tested lows near 1.1160-1.1190, it has managed cautious gains to 1.1210. RSI levels are flirting with oversold conditions (prompting daily hammer candles), but the pair remains firmly below its 50-day EMA.
           </p>
           <p>
-            <strong>GBP Resistance:</strong> GBP/USD is exhibiting a bearish near-term tone and is currently in a corrective phase. Rallies are being heavily capped by resistance zones (1.3270–1.3300). Immediate support lies at 1.3180, and a decisive break could expose 1.3104.
+            <strong>GBP/USD Tight Range:</strong> The Pound is testing critical support in the 1.3180-1.3200 range repeatedly. The 50-day EMA has crossed below the 200-day EMA (a "death cross"), signaling further downside risk if 1.3150 breaks. A breakout above 1.3308 is required to shift sentiment.
           </p>
           <p>
-            <strong>AUD Headwinds:</strong> AUD/USD is experiencing fresh downside pressure, retreating back toward the low 0.6900s after failing to sustain a three-day rally. With the ADX showing declining momentum, the focus remains on the 0.6900 floor before any further leg down.
+            <strong>AUD/USD Finding a Floor:</strong> AUD/USD remains in a pronounced downtrend since early September, capped by dense Fibonacci resistance (0.6983 - 0.7032) and the 100-period SMA (H4). Buyers are fiercely defending the 0.6900 psychological support zone as the pair searches for a floor.
           </p>
         </div>
       </div>
     </div>
   );
 }
+
+
 
 
