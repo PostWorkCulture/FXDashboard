@@ -169,22 +169,23 @@ export default function SummariesPage() {
         <h2 className="text-lg font-semibold text-white mb-4">News Brief</h2>
         <div className="space-y-4 text-zinc-300 leading-relaxed">
           <p>
-                        <strong>USD Dominance (Oct 9, 2026):</strong> The US Dollar remains the primary driver across major pairs, supported by elevated bond yields and persistent inflation concerns. Traders are heavily focused on today's Prelim UoM Consumer Sentiment release and comments from FOMC member Collins.
+                                    <strong>USD Steady Ahead of CPI (Oct 13, 2026):</strong> The US Dollar consolidates near multi-month highs as markets brace for tomorrow's headline US CPI and Core inflation prints. Speeches today from FOMC Waller and Barkin are closely watched for guidance on the Fed's terminal rate trajectory.
           </p>
           <p>
-            <strong>EUR/USD Consolidation:</strong> Bearish momentum is showing signs of a potential short-term pause. While EUR/USD recently tested lows near 1.1160-1.1190, it has managed cautious gains to 1.1210. RSI levels are flirting with oversold conditions (prompting daily hammer candles), but the pair remains firmly below its 50-day EMA.
+            <strong>EUR Inflation Focus:</strong> Destatis confirmed German Final CPI at +0.6% m/m (+3.3% y/y) this morning, driven by energy costs. EUR/USD remains range-bound between 1.1180 support and 1.1240 resistance ahead of Friday's Eurozone-wide CPI final reading.
           </p>
           <p>
-            <strong>GBP/USD Tight Range:</strong> The Pound is testing critical support in the 1.3180-1.3200 range repeatedly. The 50-day EMA has crossed below the 200-day EMA (a "death cross"), signaling further downside risk if 1.3150 breaks. A breakout above 1.3308 is required to shift sentiment.
+            <strong>GBP Stagnation:</strong> GBP/USD continues to consolidate near 1.3190 ahead of BoE Breeden's remarks today and Governor Bailey's speech on Wednesday. 1.3150 remains the critical line of defense.
           </p>
           <p>
-            <strong>AUD/USD Finding a Floor:</strong> AUD/USD remains in a pronounced downtrend since early September, capped by dense Fibonacci resistance (0.6983 - 0.7032) and the 100-period SMA (H4). Buyers are fiercely defending the 0.6900 psychological support zone as the pair searches for a floor.
+            <strong>AUD Positioning:</strong> AUD/USD hovers near the 0.6900 psychological floor. Volatility is anticipated ahead of Thursday's high-stakes Australian Employment Change and Unemployment Rate report.
           </p>
         </div>
       </div>
     </div>
   );
 }
+
 
 
 
