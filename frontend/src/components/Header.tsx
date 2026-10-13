@@ -1,12 +1,30 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useData } from "@/lib/data-context";
-import { FilterX } from "lucide-react";
+import { FilterX, Calendar } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 export function Header() {
   const { filters, setFilters } = useData();
   const pathname = usePathname();
+  const [currentDate, setCurrentDate] = useState<{ day: string; date: string } | null>(null);
+
+  useEffect(() => {
+    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    const updateDate = () => {
+      const d = new Date();
+      setCurrentDate({
+        day: days[d.getDay()],
+        date: `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+      });
+    };
+    updateDate();
+    const timer = setInterval(updateDate, 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   const titleMap: Record<string, string> = {
     "/": "Overview",
@@ -97,6 +115,18 @@ export function Header() {
             </button>
           )}
         </div>
+      </div>
+
+      {/* Top Right Date Display */}
+      <div className="flex items-center gap-2.5 self-start md:self-auto px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-sm shadow-xs shrink-0">
+        <Calendar size={15} className="text-zinc-400" />
+        {currentDate ? (
+          <span className="text-zinc-300 font-medium">
+            <span className="text-white font-bold">{currentDate.day}</span>, {currentDate.date}
+          </span>
+        ) : (
+          <span className="text-zinc-500 font-mono text-xs">--</span>
+        )}
       </div>
 
     </header>

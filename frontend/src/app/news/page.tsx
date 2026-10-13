@@ -2,18 +2,59 @@
 
 import { FolderIcon, FolderOpen, Calendar as CalendarIcon, Clock } from "lucide-react";
 
+// Helper to ensure every event always starts with the day of the week
+function parseDayAndDate(ev: { day?: string; date: string }) {
+  if (ev.day) {
+    return { day: ev.day, date: ev.date };
+  }
+
+  const trimmed = (ev.date || "").trim();
+  const dayMatch = trimmed.match(/^([A-Za-z]{3,9})[,\s]+(.*)$/);
+  const validDays: Record<string, string> = {
+    mon: "Mon", monday: "Mon",
+    tue: "Tue", tues: "Tue", tuesday: "Tue",
+    wed: "Wed", wednesday: "Wed",
+    thu: "Thu", thur: "Thu", thurs: "Thu", thursday: "Thu",
+    fri: "Fri", friday: "Fri",
+    sat: "Sat", saturday: "Sat",
+    sun: "Sun", sunday: "Sun",
+  };
+
+  if (dayMatch && validDays[dayMatch[1].toLowerCase()]) {
+    return {
+      day: validDays[dayMatch[1].toLowerCase()],
+      date: dayMatch[2].trim()
+    };
+  }
+
+  try {
+    const year = 2026;
+    const dateWithYear = trimmed.includes("202") ? trimmed : `${trimmed} ${year}`;
+    const parsed = new Date(Date.parse(dateWithYear));
+    if (!isNaN(parsed.getTime())) {
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      return { day: days[parsed.getDay()], date: trimmed };
+    }
+  } catch {}
+
+  return { day: "-", date: trimmed };
+}
+
 export default function NewsPage() {
   const newsEvents = [
-    { date: "Oct 08", time: "09:30 AM", currency: "GBP", impact: "High", event: "BoE Credit Conditions Survey", actual: "Released", forecast: "", previous: "" },
-    { date: "Oct 08", time: "12:30 PM", currency: "EUR", impact: "High", event: "ECB Monetary Policy Meeting Accounts", actual: "Released", forecast: "", previous: "" },
-    { date: "Oct 08", time: "01:30 PM", currency: "USD", impact: "High", event: "Unemployment Claims", actual: "200K", forecast: "197K", previous: "202K" },
-    { date: "Oct 09", time: "03:00 AM", currency: "EUR", impact: "Medium", event: "Italian Industrial Production m/m", actual: "", forecast: "0.2%", previous: "0.1%" },
-    { date: "Oct 09", time: "09:00 AM", currency: "USD", impact: "High", event: "Prelim UoM Consumer Sentiment", actual: "", forecast: "70.5", previous: "70.1" },
-    { date: "Oct 09", time: "09:00 AM", currency: "USD", impact: "Medium", event: "Prelim UoM Inflation Expectations", actual: "", forecast: "3.1%", previous: "3.2%" },
-    { date: "Oct 09", time: "03:00 PM", currency: "USD", impact: "Medium", event: "FOMC Member Collins Speaks", actual: "", forecast: "", previous: "" },
-    { date: "Oct 14", time: "01:30 PM", currency: "USD", impact: "High", event: "CPI m/m & y/y", actual: "", forecast: "0.2%", previous: "0.2%" },
-    { date: "Oct 15", time: "01:30 PM", currency: "USD", impact: "High", event: "Retail Sales & Core PPI", actual: "", forecast: "0.3%", previous: "0.1%" },
-    { date: "Oct 28", time: "07:00 PM", currency: "USD", impact: "High", event: "Federal Reserve (FOMC) Meeting", actual: "", forecast: "4.75%", previous: "5.00%" },
+    { day: "Thu", date: "Oct 08", time: "09:30 AM", currency: "GBP", impact: "High", event: "BoE Credit Conditions Survey", actual: "Released", forecast: "", previous: "" },
+    { day: "Thu", date: "Oct 08", time: "12:30 PM", currency: "EUR", impact: "High", event: "ECB Monetary Policy Meeting Accounts", actual: "Released", forecast: "", previous: "" },
+    { day: "Thu", date: "Oct 08", time: "01:30 PM", currency: "USD", impact: "High", event: "Unemployment Claims", actual: "200K", forecast: "197K", previous: "202K" },
+    { day: "Fri", date: "Oct 09", time: "03:00 AM", currency: "EUR", impact: "Medium", event: "Italian Industrial Production m/m", actual: "", forecast: "0.2%", previous: "0.1%" },
+    { day: "Fri", date: "Oct 09", time: "09:00 AM", currency: "USD", impact: "High", event: "Prelim UoM Consumer Sentiment", actual: "", forecast: "70.5", previous: "70.1" },
+    { day: "Fri", date: "Oct 09", time: "09:00 AM", currency: "USD", impact: "Medium", event: "Prelim UoM Inflation Expectations", actual: "", forecast: "3.1%", previous: "3.2%" },
+    { day: "Fri", date: "Oct 09", time: "03:00 PM", currency: "USD", impact: "Medium", event: "FOMC Member Collins Speaks", actual: "", forecast: "", previous: "" },
+    { day: "Tue", date: "Oct 13", time: "09:00 AM", currency: "USD", impact: "Medium", event: "NFIB Small Business Index", actual: "91.5", forecast: "91.2", previous: "91.2" },
+    { day: "Tue", date: "Oct 13", time: "02:00 PM", currency: "USD", impact: "High", event: "FOMC Member Waller Speaks", actual: "", forecast: "", previous: "" },
+    { day: "Wed", date: "Oct 14", time: "01:30 PM", currency: "USD", impact: "High", event: "CPI m/m & y/y", actual: "", forecast: "0.2%", previous: "0.2%" },
+    { day: "Wed", date: "Oct 14", time: "01:30 PM", currency: "USD", impact: "High", event: "Core CPI m/m", actual: "", forecast: "0.2%", previous: "0.3%" },
+    { day: "Thu", date: "Oct 15", time: "01:30 PM", currency: "USD", impact: "High", event: "Retail Sales & Core PPI", actual: "", forecast: "0.3%", previous: "0.1%" },
+    { day: "Wed", date: "Oct 28", time: "07:00 PM", currency: "USD", impact: "High", event: "Federal Reserve (FOMC) Meeting", actual: "", forecast: "4.75%", previous: "5.00%" },
   ];
 
   return (
@@ -32,7 +73,7 @@ export default function NewsPage() {
           <table className="w-full text-sm text-left whitespace-nowrap">
             <thead className="text-xs text-zinc-400 uppercase bg-zinc-900/50 border-b border-zinc-800">
               <tr>
-                <th className="px-6 py-4 font-medium">Date</th>
+                <th className="px-6 py-4 font-medium">Day / Date</th>
                 <th className="px-6 py-4 font-medium">Time</th>
                 <th className="px-6 py-4 font-medium">Currency</th>
                 <th className="px-6 py-4 font-medium text-center">Impact</th>
@@ -43,32 +84,42 @@ export default function NewsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-800/50">
-              {newsEvents.map((ev, i) => (
-                <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
-                  <td className="px-6 py-4 text-zinc-300">{ev.date}</td>
-                  <td className="px-6 py-4 text-zinc-400 flex items-center gap-2">
-                    <Clock size={14} /> {ev.time}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className="font-semibold text-zinc-200">{ev.currency}</span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex justify-center">
-                      <FolderIcon size={18} fill="#ef4444" stroke="#ef4444" className="drop-shadow-sm" />
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 text-zinc-200 font-medium">{ev.event}</td>
-                  <td className={`px-6 py-4 text-right font-mono ${ev.actual ? 'text-white font-semibold' : 'text-zinc-600'}`}>
-                    {ev.actual || '-'}
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono text-zinc-400">
-                    {ev.forecast || '-'}
-                  </td>
-                  <td className="px-6 py-4 text-right font-mono text-zinc-400">
-                    {ev.previous || '-'}
-                  </td>
-                </tr>
-              ))}
+              {newsEvents.map((ev, i) => {
+                const { day, date } = parseDayAndDate(ev);
+                return (
+                  <tr key={i} className="hover:bg-zinc-800/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <span className="px-2 py-0.5 rounded text-xs font-bold bg-zinc-800 text-zinc-100 border border-zinc-700/80 shadow-xs">
+                          {day}
+                        </span>
+                        <span className="text-zinc-300 font-medium">{date}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-zinc-400 flex items-center gap-2">
+                      <Clock size={14} /> {ev.time}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-semibold text-zinc-200">{ev.currency}</span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex justify-center">
+                        <FolderIcon size={18} fill="#ef4444" stroke="#ef4444" className="drop-shadow-sm" />
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-zinc-200 font-medium">{ev.event}</td>
+                    <td className={`px-6 py-4 text-right font-mono ${ev.actual ? 'text-white font-semibold' : 'text-zinc-600'}`}>
+                      {ev.actual || '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono text-zinc-400">
+                      {ev.forecast || '-'}
+                    </td>
+                    <td className="px-6 py-4 text-right font-mono text-zinc-400">
+                      {ev.previous || '-'}
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
