@@ -1,7 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
-import { Trophy, Target, Clock, DollarSign, ArrowRight } from "lucide-react";
+import { Trophy, Target, Clock, DollarSign } from "lucide-react";
 
 export default function PropPage() {
   const { filters } = useData();
@@ -15,12 +15,16 @@ export default function PropPage() {
       fundedPayout: "4% Monthly",
       description: "Steady, highly liquid behavior makes EURUSD ideal for consistent, low-drawdown prop challenges.",
       color: "blue",
-      algoRules: [
-        "Falling Knife Entry: H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
-        "Risk/Reward: Strictly 1:2 ratio (40 pips SL / 80 pips TP).",
-        "Time Filters: Blocks trading on Tue/Wed and at 09:00, 13:00, 22:00.",
-        "News Filter: Pre-emptive abort on USD/EUR Red Folder events (5%ers compliant)."
-      ]
+      entryRule: "H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
+      riskReward: "Strictly 1:2 ratio (40 pips SL / 80 pips TP).",
+      timeFilterBlocks: [
+        { day: "Monday", restriction: "09:00, 13:00, 22:00" },
+        { day: "Tuesday", restriction: "No Trade Day" },
+        { day: "Wednesday", restriction: "No Trade Day" },
+        { day: "Thursday", restriction: "09:00, 13:00, 22:00" },
+        { day: "Friday", restriction: "09:00, 13:00, 22:00" },
+      ],
+      newsFilter: "Pre-emptive abort on USD/EUR Red Folder events (5%ers compliant)."
     },
     {
       pair: "GBPUSD",
@@ -30,12 +34,16 @@ export default function PropPage() {
       fundedPayout: "5% Monthly",
       description: "Higher volatility yields larger percentage returns but requires slightly wider stops and patience.",
       color: "pink",
-      algoRules: [
-        "Falling Knife Entry: H1 RSI (14) crosses below 30 (Long) or above 70 (Short).",
-        "Risk/Reward: Strictly 1:2 ratio (80 pips SL / 160 pips TP).",
-        "Time Filters: Blocks trading on Wed/Fri and at 02:00, 10:00, 14:00.",
-        "News Filter: Pre-emptive abort on USD/GBP Red Folder events (5%ers compliant)."
-      ]
+      entryRule: "H1 RSI (14) crosses below 30 (Long) or above 70 (Short).",
+      riskReward: "Strictly 1:2 ratio (80 pips SL / 160 pips TP).",
+      timeFilterBlocks: [
+        { day: "Monday", restriction: "02:00, 10:00, 14:00" },
+        { day: "Tuesday", restriction: "02:00, 10:00, 14:00" },
+        { day: "Wednesday", restriction: "No Trade Day" },
+        { day: "Thursday", restriction: "02:00, 10:00, 14:00" },
+        { day: "Friday", restriction: "No Trade Day" },
+      ],
+      newsFilter: "Pre-emptive abort on USD/GBP Red Folder events (5%ers compliant)."
     },
     {
       pair: "AUDUSD",
@@ -45,12 +53,16 @@ export default function PropPage() {
       fundedPayout: "3.5% Monthly",
       description: "Slower trends and Asian session overlap require a longer timeline to pass standard prop firm parameters.",
       color: "green",
-      algoRules: [
-        "Falling Knife Entry: H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
-        "Risk/Reward: Strictly 1:2 ratio (50 pips SL / 100 pips TP).",
-        "Time Filters: Blocks trading on Tue/Wed and at 07:00, 09:00, 13:00, 16:00, 21:00, 22:00.",
-        "News Filter: Pre-emptive abort on USD/AUD Red Folder events (5%ers compliant)."
-      ]
+      entryRule: "H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
+      riskReward: "Strictly 1:2 ratio (50 pips SL / 100 pips TP).",
+      timeFilterBlocks: [
+        { day: "Monday", restriction: "07:00, 09:00, 13:00, 16:00, 21:00, 22:00" },
+        { day: "Tuesday", restriction: "No Trade Day" },
+        { day: "Wednesday", restriction: "No Trade Day" },
+        { day: "Thursday", restriction: "07:00, 09:00, 13:00, 16:00, 21:00, 22:00" },
+        { day: "Friday", restriction: "07:00, 09:00, 13:00, 16:00, 21:00, 22:00" },
+      ],
+      newsFilter: "Pre-emptive abort on USD/AUD Red Folder events (5%ers compliant)."
     }
   ];
 
@@ -80,7 +92,7 @@ export default function PropPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {visibleIntel.map(intel => (
           <div key={intel.pair} className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
-            <div className={`p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center`}>
+            <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
               <div>
                 <h3 className="text-2xl font-bold text-white mb-1">{intel.pair}</h3>
                 <p className="text-sm text-zinc-500">{intel.target}</p>
@@ -133,16 +145,46 @@ export default function PropPage() {
                 {intel.description}
               </div>
 
-              <div className="pt-4 border-t border-zinc-800/50">
-                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Algo Entry Rules</h4>
-                <ul className="space-y-2">
-                  {intel.algoRules.map((rule, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
-                      <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-1.5 shrink-0"></div>
-                      <span>{rule}</span>
-                    </li>
-                  ))}
-                </ul>
+              <div className="pt-4 border-t border-zinc-800/50 space-y-3">
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Algo Entry Rules</h4>
+                
+                <div className="flex items-start gap-2 text-sm text-zinc-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
+                  <div>
+                    <span className="font-semibold text-white">Falling Knife Entry:</span> {intel.entryRule}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-sm text-zinc-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
+                  <div>
+                    <span className="font-semibold text-white">Risk/Reward:</span> {intel.riskReward}
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-sm text-zinc-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
+                  <div className="flex-1">
+                    <span className="font-semibold text-white block mb-1.5">Time Filters Blocks:</span>
+                    <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-lg p-2.5 space-y-1 font-mono text-xs">
+                      {intel.timeFilterBlocks.map((tf, i) => (
+                        <div key={i} className="flex items-center">
+                          <span className="text-zinc-400 w-28 shrink-0">{tf.day} -</span>
+                          <span className={tf.restriction === "No Trade Day" ? "text-rose-400 font-semibold" : "text-zinc-300"}>
+                            {tf.restriction}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 text-sm text-zinc-300">
+                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
+                  <div>
+                    <span className="font-semibold text-white">News Filter:</span> {intel.newsFilter}
+                  </div>
+                </div>
               </div>
 
             </div>
