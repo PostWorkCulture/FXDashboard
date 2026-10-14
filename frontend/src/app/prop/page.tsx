@@ -1,7 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
-import { Trophy, Target, Clock, DollarSign } from "lucide-react";
+import { Target, Clock, DollarSign } from "lucide-react";
 
 export default function PropPage() {
   const { filters } = useData();
@@ -72,23 +72,6 @@ export default function PropPage() {
 
   return (
     <div className="flex flex-col gap-6 h-full pb-8">
-      
-      {/* Intro block */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-lg bg-yellow-500/10 flex items-center justify-center text-yellow-500 shrink-0">
-            <Trophy size={24} />
-          </div>
-          <div>
-            <h2 className="text-xl font-bold text-white">Prop Firm Passing Lifecycle</h2>
-            <p className="text-zinc-400 mt-2 max-w-3xl">
-              Estimated timelines and projected performance targets for passing standard 2-step evaluation challenges. 
-              These expectations are calculated based on quantitative algorithmic data, average trade frequency, and historical win rates.
-            </p>
-          </div>
-        </div>
-      </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {visibleIntel.map(intel => (
           <div key={intel.pair} className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
