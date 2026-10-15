@@ -1,19 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { 
-  LayoutDashboard, 
-  Wallet,
-  PieChart as PieChartIcon, 
-  Trophy,
-  TrendingUp,
-  Calendar,
-  Globe
-} from "lucide-react";
-
-import logoImg from "../../public/icons/logo.jpg";
+import { LayoutDashboard, List, BarChart3, Trophy } from "lucide-react";
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -31,10 +20,9 @@ export function Sidebar() {
       
       <nav className="flex-1 px-4 py-4 space-y-1">
         <NavItem href="/" icon={<LayoutDashboard size={20} />} label="Overview" active={pathname === "/"} />
-        <NavItem href="/summaries" icon={<TrendingUp size={20} />} label="Summaries" active={pathname === "/summaries"} />
-        <NavItem href="/reports" icon={<PieChartIcon size={20} />} label="Reports" active={pathname === "/reports"} />
+        <NavItem href="/trades" icon={<List size={20} />} label="Trades" active={pathname === "/trades"} />
+        <NavItem href="/analytics" icon={<BarChart3 size={20} />} label="Analytics" active={pathname === "/analytics"} />
         <NavItem href="/prop" icon={<Trophy size={20} />} label="Prop" active={pathname === "/prop"} />
-        <NavItem href="/news" icon={<Globe size={20} />} label="News" active={pathname === "/news"} />
       </nav>
     </aside>
   );

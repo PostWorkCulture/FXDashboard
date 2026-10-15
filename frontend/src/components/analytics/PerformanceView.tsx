@@ -2,6 +2,7 @@
 
 import { useData } from "@/lib/data-context";
 import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import {
   AreaChart,
   Area,
@@ -18,15 +19,18 @@ import {
   
 } from "recharts";
 
-export default function ReportsPage() {
-  const { filteredTrades, isLoading } = useData();
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+export function PerformanceView() {
+  const { filteredTrades, isLoading, filters, setFilters } = useData();
+  const router = useRouter();
 
   const data = useMemo(() => {
     if (filteredTrades.length === 0) return null;
 
     // Drawdown Calculation
-    let current_equity = 10000.0;
-    let peak_equity = 10000.0;
+    let current_equity = 25000.0;
+    let peak_equity = 25000.0;
     const drawdownCurve: any[] = [];
     
     [...filteredTrades]
@@ -91,7 +95,15 @@ export default function ReportsPage() {
         };
       });
 
-    return { drawdownCurve, hourlyBreakdown, winRateData, top3Trades, bottom3Trades, tradesPerMonth };
+    // P&L by Entry Day (Mon-Sun)
+    const dowPnl = [0, 0, 0, 0, 0, 0, 0];
+    filteredTrades.forEach(t => {
+      const jsDay = new Date(t.entry_time.replace(" ", "T")).getDay();
+      dowPnl[jsDay === 0 ? 6 : jsDay - 1] += t.pnl;
+    });
+    const dowBreakdown = dowPnl.map((pnl, i) => ({ name: DAYS[i], pnl, dayIndex: i }));
+
+    return { drawdownCurve, hourlyBreakdown, winRateData, top3Trades, bottom3Trades, tradesPerMonth, dowBreakdown };
   }, [filteredTrades]);
 
   if (isLoading) {
@@ -149,6 +161,47 @@ export default function ReportsPage() {
           </div>
         </div>
 
+        {/* P&L by Entry Day (click a bar to filter Trades) */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold mb-6">P&L by Entry Day</h2>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={data.dowBreakdown}
+                margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                onClick={(e: any) => {
+                  const p = e?.activePayload?.[0]?.payload;
+                  if (p?.dayIndex !== undefined) {
+                    setFilters(f => ({ ...f, dayOfWeek: p.dayIndex }));
+                    router.push("/trades");
+                  }
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                <XAxis dataKey="name" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                  cursor={{ fill: '#27272a' }}
+                  formatter={(value: any) => `$${value.toFixed(2)}`}
+                />
+                <Bar dataKey="pnl" radius={[4, 4, 0, 0]} className="cursor-pointer">
+                  {data.dowBreakdown.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={entry.pnl >= 0 ? '#22c55e' : '#ec4899'}
+                      opacity={filters.dayOfWeek === null || filters.dayOfWeek === entry.dayIndex ? 1 : 0.3}
+                    />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+      </div>
+
+      {/* Win Rate by Side + Top and Bottom Trades */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Win Rate by Side */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold mb-6">Win Rate by Side (%)</h2>
@@ -171,10 +224,7 @@ export default function ReportsPage() {
             </ResponsiveContainer>
           </div>
         </div>
-      </div>
 
-      {/* Top and Bottom Trades */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
           <h2 className="text-lg font-semibold text-green-500 mb-6">Top 3 Most Profitable Trades</h2>
           <div className="space-y-4">

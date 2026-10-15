@@ -1,16 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
 import { useData } from "@/lib/data-context";
-import { 
-  BarChart3, 
-  Target, 
-  Activity,
-  Wallet,
-  ClipboardCheck,
-  Calendar
-} from "lucide-react";
 import {
   LineChart,
   Line,
@@ -19,22 +10,11 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  ReferenceLine,
-  Legend
+  ReferenceLine
 } from "recharts";
-import { useRouter } from "next/navigation";
-
-const COLORS = ['#22c55e', '#ec4899', '#3b82f6', '#f59e0b', '#8b5cf6'];
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function Dashboard() {
-  const { rawTrades, filteredTrades, isLoading, filters, setFilters } = useData();
-  const router = useRouter();
+  const { rawTrades, filteredTrades, isLoading } = useData();
 
   const data = useMemo(() => {
     // Metrics
@@ -48,7 +28,7 @@ export default function Dashboard() {
     const profit_factor = gross_loss > 0 ? gross_profit / gross_loss : 0;
 
     // Equity Curve
-    let current_equity = 10000.0;
+    let current_equity = 25000.0;
     const equityMap = new Map();
     [...filteredTrades]
       .filter(t => t.exit_time)
@@ -60,55 +40,35 @@ export default function Dashboard() {
     });
     const equityCurve = Array.from(equityMap.entries()).map(([date, equity]) => ({ date, equity: Math.round((equity as number) * 100) / 100 }));
 
-    // Breakdowns
-    const long_pnl = filteredTrades.filter(t => t.direction === "Long").reduce((sum, t) => sum + t.pnl, 0);
-    const short_pnl = filteredTrades.filter(t => t.direction === "Short").reduce((sum, t) => sum + t.pnl, 0);
-    const directionBreakdown = [
-      { name: "Long", value: Math.max(long_pnl, 0) }, // Pie charts need positive values for slice size, but wait PNL can be negative. 
-      // Actually TradeZella uses absolute values for volume or win counts for pies, or just filters. 
-      // Let's use Win/Loss counts for the pie to avoid negative slice issues, or just Profit vs Loss.
-    ];
-
-    // Win Rate by Side (%)
-    const long_trades = filteredTrades.filter(t => t.direction === "Long");
-    const short_trades = filteredTrades.filter(t => t.direction === "Short");
-    const long_win_rate = long_trades.length > 0 ? (long_trades.filter(t => t.pnl > 0).length / long_trades.length) * 100 : 0;
-    const short_win_rate = short_trades.length > 0 ? (short_trades.filter(t => t.pnl > 0).length / short_trades.length) * 100 : 0;
-    const sideWinRateBreakdown = [
-      { name: "Long", value: Math.round(long_win_rate), fill: "#22c55e" },
-      { name: "Short", value: Math.round(short_win_rate), fill: "#ec4899" }
-    ];
-
-    // Day of Week PNL
-    const dowPnl = [0, 0, 0, 0, 0, 0, 0];
-    filteredTrades.forEach(t => {
-      const entryDate = new Date(t.entry_time.replace(" ", "T"));
-      const jsDay = entryDate.getDay();
-      const adjustedDay = jsDay === 0 ? 6 : jsDay - 1; // 0=Mon, 6=Sun
-      dowPnl[adjustedDay] += t.pnl;
-    });
-    
-    // We want to return all 7 days so they can be clicked
-    const dowBreakdown = dowPnl.map((pnl, i) => ({ name: DAYS[i], pnl: pnl, dayIndex: i }));
+    // Max drawdown ($, peak-to-trough on closed-trade equity)
+    let peak = 25000.0;
+    let max_drawdown = 0;
+    let running = 25000.0;
+    [...filteredTrades]
+      .filter(t => t.exit_time)
+      .sort((a, b) => new Date(a.exit_time as string).getTime() - new Date(b.exit_time as string).getTime())
+      .forEach(t => {
+        running += t.pnl;
+        peak = Math.max(peak, running);
+        max_drawdown = Math.max(max_drawdown, peak - running);
+      });
 
     // Calculate split offset for Equity Curve
-    const maxEq = Math.max(...equityCurve.map(i => i.equity), 10000);
-    const minEq = Math.min(...equityCurve.map(i => i.equity), 10000);
+    const maxEq = Math.max(...equityCurve.map(i => i.equity), 25000);
+    const minEq = Math.min(...equityCurve.map(i => i.equity), 25000);
     let equityOff = 0;
-    if (maxEq <= 10000) {
+    if (maxEq <= 25000) {
       equityOff = 1;
-    } else if (minEq >= 10000) {
+    } else if (minEq >= 25000) {
       equityOff = 0;
     } else {
-      equityOff = (maxEq - 10000) / (maxEq - minEq);
+      equityOff = (maxEq - 25000) / (maxEq - minEq);
     }
 
     return {
-      metrics: { total_trades, win_rate, total_pnl, profit_factor },
+      metrics: { total_trades, win_rate, total_pnl, profit_factor, max_drawdown },
       equityCurve,
-      equityOff,
-      sideWinRateBreakdown,
-      dowBreakdown
+      equityOff
     };
   }, [filteredTrades]);
 
@@ -117,7 +77,7 @@ export default function Dashboard() {
     return rawTrades.filter(t => {
       if (t.status === "open") return true;
       if (t.status === "closed" && t.exit_time) {
-        const exitDate = new Date(t.exit_time.replace(" ", "T"));
+        const exitDate = new Date((t.exit_time as string).replace(" ", "T"));
         const diffHours = (now.getTime() - exitDate.getTime()) / (1000 * 60 * 60);
         return diffHours <= 48; // closed within 2 days
       }
@@ -133,24 +93,7 @@ export default function Dashboard() {
     return <div className="flex h-full items-center justify-center text-zinc-500">Loading data...</div>;
   }
 
-  const { metrics, equityCurve, equityOff, sideWinRateBreakdown, dowBreakdown } = data;
-
-  const handleBarClick = (data: any) => {
-    if (data && data.activePayload && data.activePayload.length > 0) {
-      const payload = data.activePayload[0].payload;
-      if (payload.dayIndex !== undefined) {
-        setFilters(f => ({ ...f, dayOfWeek: payload.dayIndex }));
-        router.push("/trades");
-      }
-    }
-  };
-
-  const handlePieClick = (data: any) => {
-    if (data && data.name) {
-      setFilters(f => ({ ...f, direction: data.name }));
-      router.push("/trades");
-    }
-  };
+  const { metrics, equityCurve, equityOff } = data;
 
   return (
     <div className="space-y-8 pb-8">
@@ -179,9 +122,21 @@ export default function Dashboard() {
                     <div className="font-medium text-white">{trade.entry_price}</div>
                   </div>
                   <div>
-                    <div className="text-zinc-500 mb-1">Entry Date</div>
+                    <div className="text-zinc-500 mb-1">Entry Date (broker)</div>
                     <div className="font-medium text-white">{trade.entry_time}</div>
                   </div>
+                  {trade.sl != null && (
+                    <div>
+                      <div className="text-zinc-500 mb-1">Stop Loss</div>
+                      <div className="font-medium text-pink-400">{trade.sl}</div>
+                    </div>
+                  )}
+                  {trade.tp != null && (
+                    <div>
+                      <div className="text-zinc-500 mb-1">Take Profit</div>
+                      <div className="font-medium text-green-400">{trade.tp}</div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="bg-zinc-950 p-4 rounded-lg text-sm border border-zinc-800/50">
@@ -215,14 +170,16 @@ export default function Dashboard() {
         <MetricCard 
           title="Win Rate" 
           value={`${metrics.win_rate.toFixed(1)}%`}
+          sub={`${metrics.total_trades.toLocaleString()} trades`}
         />
         <MetricCard 
           title="Profit Factor" 
           value={metrics.profit_factor.toFixed(2)}
         />
         <MetricCard 
-          title="Total Trades" 
-          value={metrics.total_trades.toString()}
+          title="Max Drawdown" 
+          value={`-$${metrics.max_drawdown.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`}
+          trend={metrics.max_drawdown > 0 ? "negative" : undefined}
         />
       </div>
 
@@ -253,14 +210,14 @@ export default function Dashboard() {
                   fontSize={12}
                   tickLine={false}
                   axisLine={false}
-                  domain={[minEq => Math.min(minEq, 10000), maxEq => Math.max(maxEq, 10000)]}
+                  domain={[minEq => Math.min(minEq, 25000), maxEq => Math.max(maxEq, 25000)]}
                   tickFormatter={(value) => `$${Math.round(value).toLocaleString()}`}
                 />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                 />
                 <ReferenceLine 
-                  y={10000} 
+                  y={25000} 
                   stroke="#52525b" 
                   strokeDasharray="3 3" 
                   label={{ position: 'left', value: 'Start', fill: '#a1a1aa', fontSize: 12 }} 
@@ -280,126 +237,11 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Navigation Links */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Link href="/trades" className="group bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-green-500/10 flex items-center justify-center text-green-500 group-hover:scale-110 transition-transform">
-              <Wallet size={24} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">Trades</h3>
-              <p className="text-sm text-zinc-400">View detailed trade log and execution data</p>
-            </div>
-          </div>
-          <div className="text-zinc-500 group-hover:text-white transition-colors px-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
-        </Link>
-
-        <Link href="/calendar" className="group bg-zinc-900 border border-zinc-800 rounded-xl p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors shadow-sm">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-500 group-hover:scale-110 transition-transform">
-              <Calendar size={24} />
-            </div>
-            <div>
-              <h3 className="font-semibold text-white">Calendar</h3>
-              <p className="text-sm text-zinc-400">View performance on a monthly calendar grid</p>
-            </div>
-          </div>
-          <div className="text-zinc-500 group-hover:text-white transition-colors px-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-          </div>
-        </Link>
-      </div>
-
-      {/* Breakdowns Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Long vs Short Pie Chart */}
-          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold">Win Rate by Side (%)</h2>
-          </div>
-          <div className="h-64 w-full">
-            {sideWinRateBreakdown.some(d => d.value > 0) ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={sideWinRateBreakdown}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
-                    paddingAngle={6}
-                    cornerRadius={6}
-                    stroke="none"
-                    dataKey="value"
-                  >
-                    {sideWinRateBreakdown.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={entry.fill} 
-                        stroke="none"
-                        opacity={filters.direction === "All" || filters.direction === entry.name ? 1 : 0.3}
-                        style={{ outline: 'none' }}
-                      />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                    formatter={(value: any) => `${value}%`}
-                  />
-                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '12px', color: '#d4d4d8' }} />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-                <div className="flex h-full items-center justify-center text-zinc-500">No data</div>
-            )}
-          </div>
-        </div>
-
-        {/* Day of Week Bar Chart */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-lg font-semibold">P&L by Entry Day</h2>
-          </div>
-          <div className="h-64 w-full">
-            {dowBreakdown.some(d => d.pnl !== 0) ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dowBreakdown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                  <XAxis dataKey="name" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
-                  <Tooltip 
-                    contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                    cursor={{fill: '#27272a'}}
-                    formatter={(value: any) => `$${value.toFixed(2)}`}
-                  />
-                  <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
-                    {dowBreakdown.map((entry, index) => {
-                      const isActive = filters.dayOfWeek === null || filters.dayOfWeek === entry.dayIndex;
-                      return (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={entry.pnl >= 0 ? '#22c55e' : '#ec4899'} 
-                          opacity={isActive ? 1 : 0.3}
-                        />
-                      );
-                    })}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-                <div className="flex h-full items-center justify-center text-zinc-500">No data</div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
 
-function MetricCard({ title, value, trend }: { title: string, value: string, trend?: "positive" | "negative" }) {
+function MetricCard({ title, value, trend, sub }: { title: string, value: string, trend?: "positive" | "negative", sub?: string }) {
   return (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -411,6 +253,7 @@ function MetricCard({ title, value, trend }: { title: string, value: string, tre
         }`}>
           {value}
         </div>
+        {sub && <div className="text-sm text-zinc-500 mt-1">{sub}</div>}
       </div>
     </div>
   );

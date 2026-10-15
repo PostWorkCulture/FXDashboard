@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import { useData } from "@/lib/data-context";
 import { FilterX, Calendar } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { nextNewsEvent, type NewsEvent } from "@/lib/news";
 
 export function Header() {
   const { filters, setFilters } = useData();
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState<{ day: string; date: string } | null>(null);
+  const [nextEvent, setNextEvent] = useState<NewsEvent | null | undefined>(undefined);
 
   useEffect(() => {
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -20,6 +22,7 @@ export function Header() {
         day: days[d.getDay()],
         date: `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
       });
+      setNextEvent(nextNewsEvent(d));
     };
     updateDate();
     const timer = setInterval(updateDate, 60000);
@@ -28,11 +31,8 @@ export function Header() {
 
   const titleMap: Record<string, string> = {
     "/": "Overview",
-    "/calendar": "Calendar",
     "/trades": "Trades",
-    "/reports": "Reports",
-    "/summaries": "Summaries",
-    "/news": "News",
+    "/analytics": "Analytics",
     "/prop": "Prop",
   };
   const title = titleMap[pathname] || "Dashboard";
@@ -79,14 +79,6 @@ export function Header() {
                 ALL
               </button>
               <button 
-                onClick={() => togglePair("EURUSD")}
-                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
-                  filters.symbol === "EURUSD" ? "bg-zinc-800 text-blue-400 shadow drop-shadow-[0_0_8px_rgba(96,165,250,0.6)]" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                EURUSD
-              </button>
-              <button 
                 onClick={() => togglePair("GBPUSD")}
                 className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
                   filters.symbol === "GBPUSD" ? "bg-zinc-800 text-pink-400 shadow drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]" : "text-zinc-400 hover:text-white"
@@ -117,8 +109,24 @@ export function Header() {
         </div>
       </div>
 
+      <div className="flex items-center gap-3 self-start md:self-auto min-w-0">
+      {/* Next red-folder event */}
+      {nextEvent !== undefined && (
+        <div className="flex items-center gap-2 text-sm text-zinc-400 min-w-0 max-w-[22rem]" title={nextEvent ? `Next red-folder event (UK time): ${nextEvent.currency} ${nextEvent.event}` : undefined}>
+          <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
+          {nextEvent ? (
+            <>
+              <span className="text-zinc-200 font-medium truncate">{nextEvent.currency} {nextEvent.event}</span>
+              <span className="shrink-0">· {new Date(nextEvent.at).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</span>
+            </>
+          ) : (
+            <span>News calendar needs updating</span>
+          )}
+        </div>
+      )}
+
       {/* Top Right Date Display */}
-      <div className="flex items-center gap-2.5 self-start md:self-auto px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-sm shadow-xs shrink-0">
+      <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-sm shadow-xs">
         <Calendar size={15} className="text-zinc-400" />
         {currentDate ? (
           <span className="text-zinc-300 font-medium">
@@ -127,6 +135,7 @@ export function Header() {
         ) : (
           <span className="text-zinc-500 font-mono text-xs">--</span>
         )}
+      </div>
       </div>
 
     </header>

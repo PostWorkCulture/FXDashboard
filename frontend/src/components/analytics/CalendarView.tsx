@@ -17,7 +17,7 @@ import {
   parseISO
 } from "date-fns";
 
-export default function CalendarPage() {
+export function CalendarView() {
   const { filteredTrades, isLoading } = useData();
   const [currentDate, setCurrentDate] = useState(new Date()); 
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
@@ -167,7 +167,7 @@ export default function CalendarPage() {
                   
                   <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400">
                     <div>Entry: <span className="text-zinc-200">{trade.entry_price.toFixed(5)}</span></div>
-                    <div>Exit: <span className="text-zinc-200">{trade.exit_price.toFixed(5)}</span></div>
+                    <div>Exit: <span className="text-zinc-200">{trade.exit_price != null ? trade.exit_price.toFixed(5) : "Open"}</span></div>
                     <div>Duration: <span className="text-zinc-200">{trade.duration_hours?.toFixed(1) || "-"}h</span></div>
                     <div>R-Mult: <span className="text-zinc-200">{trade.r_multiple?.toFixed(2) || "-"}R</span></div>
                   </div>
