@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useData } from "@/lib/data-context";
 import { Target, Clock, ShieldAlert, Newspaper } from "lucide-react";
 import { usd, pct as fmtPct } from "@/lib/format";
+import { ChallengePaths } from "@/components/prop/ChallengePaths";
 
 // Everything on this page comes from public/data/strategy.json, written by python/export_dashboard.py
 // from the same config the EA and backtest use - nothing here is typed in by hand.
@@ -57,6 +58,8 @@ export default function PropPage() {
           </div>
         ))}
       </div>
+
+      <ChallengePaths phases={[{ label: "Phase 1", target: 8 }, { label: "Phase 2", target: 5 }]} />
 
       {/* Pair rule cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

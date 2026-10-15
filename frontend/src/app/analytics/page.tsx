@@ -3,12 +3,19 @@
 import { useState } from "react";
 import { PerformanceView } from "@/components/analytics/PerformanceView";
 import { CalendarView } from "@/components/analytics/CalendarView";
+import { DailyHeatmap } from "@/components/analytics/DailyHeatmap";
 
 const TABS = ["Performance", "Calendar"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function AnalyticsPage() {
   const [tab, setTab] = useState<Tab>("Performance");
+  const [focus, setFocus] = useState<{ date: Date; selectDay: boolean } | null>(null);
+
+  const openInCalendar = (date: Date, selectDay: boolean) => {
+    setFocus({ date, selectDay });
+    setTab("Calendar");
+  };
 
   return (
     <div className="space-y-6">
@@ -25,7 +32,14 @@ export default function AnalyticsPage() {
           </button>
         ))}
       </div>
-      {tab === "Performance" ? <PerformanceView /> : <CalendarView />}
+      {tab === "Performance" ? (
+        <PerformanceView onPickMonth={(y, m) => openInCalendar(new Date(y, m, 1), false)} />
+      ) : (
+        <div className="space-y-4">
+          <DailyHeatmap onPickDay={d => openInCalendar(d, true)} />
+          <CalendarView focus={focus} />
+        </div>
+      )}
     </div>
   );
 }

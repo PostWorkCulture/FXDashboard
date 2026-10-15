@@ -2,6 +2,8 @@
 
 import { useData } from "@/lib/data-context";
 import { STARTING_BALANCE, usd, pct } from "@/lib/format";
+import { MonthlyReturns } from "@/components/analytics/MonthlyReturns";
+import { TradeQuality } from "@/components/analytics/TradeQuality";
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -22,7 +24,7 @@ import {
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export function PerformanceView() {
+export function PerformanceView({ onPickMonth }: { onPickMonth?: (year: number, month: number) => void } = {}) {
   const { closedTrades: filteredTrades, isLoading, filters, setFilters } = useData();
   const router = useRouter();
 
@@ -117,6 +119,8 @@ export function PerformanceView() {
 
   return (
     <div className="space-y-4 pb-8">
+      <MonthlyReturns onPickMonth={onPickMonth} />
+
 
       {/* Trades Per Month Chart */}
       <div className="border border-zinc-800/70 rounded-xl p-6">
@@ -200,6 +204,8 @@ export function PerformanceView() {
           </div>
         </div>
       </div>
+
+      <TradeQuality />
 
       {/* Win Rate by Side + Top and Bottom Trades */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

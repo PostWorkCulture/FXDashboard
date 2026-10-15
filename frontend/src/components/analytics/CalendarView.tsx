@@ -2,7 +2,7 @@
 
 import { useData } from "@/lib/data-context";
 import { usd, price, rMultiple, duration, pnlClass } from "@/lib/format";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
   format,
@@ -18,10 +18,17 @@ import {
   parseISO
 } from "date-fns";
 
-export function CalendarView() {
+export function CalendarView({ focus }: { focus?: { date: Date; selectDay: boolean } | null }) {
   const { filteredTrades, closedTrades, isLoading } = useData();
   const [currentDate, setCurrentDate] = useState(new Date()); 
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+
+  // Jump to a month/day picked elsewhere (monthly returns table, daily heatmap)
+  useEffect(() => {
+    if (!focus) return;
+    setCurrentDate(focus.date);
+    setSelectedDay(focus.selectDay ? focus.date : null);
+  }, [focus]);
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));

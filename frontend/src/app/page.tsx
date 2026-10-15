@@ -3,18 +3,10 @@
 import { useMemo } from "react";
 import { useData } from "@/lib/data-context";
 import { STARTING_BALANCE, usd, pct, price, pnlClass } from "@/lib/format";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine
-} from "recharts";
-
-const toTime = (s: string | null | undefined) => (s ? new Date(s.replace(" ", "T")).getTime() : 0);
+import { equitySeries, byExit, rolling, sample } from "@/lib/stats";
+import { EquityDrawdown } from "@/components/charts/EquityDrawdown";
+import { Sparkline, useCountUp } from "@/components/charts/Sparkline";
+import { OpenTradeGauge } from "@/components/OpenTradeGauge";
 
 export default function Dashboard() {
   const { rawTrades, closedTrades, isLoading } = useData();
@@ -25,39 +17,30 @@ export default function Dashboard() {
     const winning_trades = closedTrades.filter(t => t.pnl > 0).length;
     const win_rate = total_trades > 0 ? (winning_trades / total_trades) * 100 : 0;
     const total_pnl = closedTrades.reduce((sum, t) => sum + t.pnl, 0);
-
     const gross_profit = closedTrades.filter(t => t.pnl > 0).reduce((sum, t) => sum + t.pnl, 0);
     const gross_loss = Math.abs(closedTrades.filter(t => t.pnl < 0).reduce((sum, t) => sum + t.pnl, 0));
     const profit_factor = gross_loss > 0 ? gross_profit / gross_loss : 0;
 
-    // Equity curve and max drawdown (peak-to-trough on closed-trade equity)
-    const byExit = [...closedTrades].sort((a, b) => toTime(a.exit_time) - toTime(b.exit_time));
-    let equity = STARTING_BALANCE;
-    let peak = STARTING_BALANCE;
-    let max_dd_usd = 0;
-    let max_dd_pct = 0;
-    const equityMap = new Map<string, number>();
-    byExit.forEach(t => {
-      equity += t.pnl;
-      peak = Math.max(peak, equity);
-      max_dd_usd = Math.max(max_dd_usd, peak - equity);
-      max_dd_pct = Math.max(max_dd_pct, ((peak - equity) / peak) * 100);
-      equityMap.set((t.exit_time as string).split(" ")[0], equity);
-    });
-    const equityCurve = Array.from(equityMap.entries()).map(([date, eq]) => ({ date, equity: Math.round(eq) }));
-
-    // Split point for the two-colour (above/below start) line
-    const maxEq = Math.max(...equityCurve.map(i => i.equity), STARTING_BALANCE);
-    const minEq = Math.min(...equityCurve.map(i => i.equity), STARTING_BALANCE);
-    const step = maxEq - minEq > 40000 ? 20000 : maxEq - minEq > 10000 ? 5000 : 1000;
-    const equityDomain: [number, number] = [Math.floor(minEq / step) * step, Math.ceil(maxEq / step) * step];
-    const equityOff = maxEq <= STARTING_BALANCE ? 1 : minEq >= STARTING_BALANCE ? 0 : (maxEq - STARTING_BALANCE) / (maxEq - minEq);
+    const curve = equitySeries(closedTrades);
+    // Max drawdown on a per-trade basis (finer than the daily curve)
+    let eq = STARTING_BALANCE, peak = STARTING_BALANCE, max_dd_usd = 0, max_dd_pct = 0;
+    for (const t of byExit(closedTrades)) {
+      eq += t.pnl;
+      peak = Math.max(peak, eq);
+      max_dd_usd = Math.max(max_dd_usd, peak - eq);
+      max_dd_pct = Math.max(max_dd_pct, ((peak - eq) / peak) * 100);
+    }
+    const roll = rolling(closedTrades, 30);
 
     return {
       metrics: { total_trades, win_rate, total_pnl, profit_factor, max_dd_usd, max_dd_pct, return_pct: (total_pnl / STARTING_BALANCE) * 100 },
-      equityCurve,
-      equityOff,
-      equityDomain
+      curve,
+      spark: {
+        equity: sample(curve.map(p => p.equity)),
+        winRate: sample(roll.winRate),
+        profitFactor: sample(roll.profitFactor),
+        drawdown: sample(curve.map(p => p.drawdown)),
+      },
     };
   }, [closedTrades]);
 
@@ -82,7 +65,7 @@ export default function Dashboard() {
     return <div className="flex h-full items-center justify-center text-zinc-500">Loading data...</div>;
   }
 
-  const { metrics, equityCurve, equityOff, equityDomain } = data;
+  const { metrics, curve, spark } = data;
 
   return (
     <div className="space-y-8 pb-8">
@@ -114,19 +97,9 @@ export default function Dashboard() {
                     <div className="text-zinc-500 mb-1">Entry Date (broker)</div>
                     <div className="font-medium text-white tabular-nums">{trade.entry_time.slice(0, 16)}</div>
                   </div>
-                  {trade.sl != null && (
-                    <div>
-                      <div className="text-zinc-500 mb-1">Stop Loss</div>
-                      <div className="font-medium text-white tabular-nums">{price(trade.sl)}</div>
-                    </div>
-                  )}
-                  {trade.tp != null && (
-                    <div>
-                      <div className="text-zinc-500 mb-1">Take Profit</div>
-                      <div className="font-medium text-white tabular-nums">{price(trade.tp)}</div>
-                    </div>
-                  )}
                 </div>
+
+                {trade.status === 'open' && <OpenTradeGauge trade={trade} />}
 
                 <div className="text-sm pt-3 border-t border-zinc-800/70">
                   <div className="text-zinc-500 mb-1">Trigger</div>
@@ -149,104 +122,78 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Metrics Grid */}
+      {/* KPIs with trend sparklines */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard 
-          title="Net P&L" 
-          value={usd(metrics.total_pnl, { signed: true })}
+        <KpiCard
+          title="Net P&L"
+          value={metrics.total_pnl}
+          format={v => usd(v, { signed: true })}
           sub={`${pct(metrics.return_pct, { signed: true })} on ${usd(STARTING_BALANCE)}`}
-          trend={metrics.total_pnl > 0 ? "positive" : metrics.total_pnl < 0 ? "negative" : undefined}
+          tone={metrics.total_pnl > 0 ? "pos" : metrics.total_pnl < 0 ? "neg" : undefined}
+          spark={spark.equity}
+          sparkBaseline={STARTING_BALANCE}
+          sparkLabel="Equity"
         />
-        <MetricCard 
-          title="Win Rate" 
-          value={metrics.total_trades > 0 ? pct(metrics.win_rate) : "—"}
+        <KpiCard
+          title="Win Rate"
+          value={metrics.win_rate}
+          format={v => (metrics.total_trades > 0 ? pct(v) : "—")}
           sub={`${metrics.total_trades.toLocaleString("en-GB")} closed ${metrics.total_trades === 1 ? "trade" : "trades"}`}
+          spark={spark.winRate}
+          sparkLabel="Rolling 30 trades"
         />
-        <MetricCard 
-          title="Profit Factor" 
-          value={metrics.profit_factor > 0 ? metrics.profit_factor.toFixed(2) : "—"}
+        <KpiCard
+          title="Profit Factor"
+          value={metrics.profit_factor}
+          format={v => (metrics.profit_factor > 0 ? v.toFixed(2) : "—")}
+          spark={spark.profitFactor}
+          sparkBaseline={1}
+          sparkLabel="Rolling 30 trades"
         />
-        <MetricCard 
-          title="Max Drawdown" 
-          value={metrics.total_trades > 0 ? pct(-metrics.max_dd_pct) : "—"}
+        <KpiCard
+          title="Max Drawdown"
+          value={-metrics.max_dd_pct}
+          format={v => (metrics.total_trades > 0 ? pct(v) : "—")}
           sub={metrics.max_dd_usd > 0 ? `${usd(-metrics.max_dd_usd)} peak to trough` : undefined}
-          trend={metrics.max_dd_pct > 0 ? "negative" : undefined}
+          tone={metrics.max_dd_pct > 0 ? "neg" : undefined}
+          spark={spark.drawdown}
+          sparkColor="#ec4899"
+          sparkLabel="Drawdown"
         />
       </div>
 
-      {/* Equity Curve Chart */}
+      {/* Equity curve + underwater drawdown */}
       <div className="border border-zinc-800/70 rounded-xl p-6">
         <h2 className="text-sm font-medium text-zinc-300 mb-4">Equity curve</h2>
-        <div className="h-80 w-full">
-          {equityCurve.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={equityCurve} margin={{ top: 10, right: 0, left: 10, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="strokeEquity" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset={equityOff} stopColor="#22c55e" stopOpacity={1}/>
-                    <stop offset={equityOff} stopColor="#ec4899" stopOpacity={1}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid stroke="#1f1f23" vertical={false} />
-                <XAxis 
-                  dataKey="date" 
-                  stroke="#71717a" 
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  minTickGap={30}
-                />
-                <YAxis 
-                  stroke="#71717a" 
-                  fontSize={12}
-                  tickLine={false}
-                  axisLine={false}
-                  domain={equityDomain}
-                  allowDecimals={false}
-                  width={72}
-                  tickFormatter={(value) => usd(value)}
-                />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px', fontSize: 12 }}
-                  formatter={(value: any) => [usd(value), "Equity"]}
-                />
-                <ReferenceLine 
-                  y={STARTING_BALANCE} 
-                  stroke="#3f3f46" 
-                  strokeDasharray="3 3" 
-                  label={{ position: 'insideTopRight', value: `Start ${usd(STARTING_BALANCE)}`, fill: '#71717a', fontSize: 11 }} 
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="equity" 
-                  stroke="url(#strokeEquity)" 
-                  strokeWidth={2}
-                  dot={false}
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="flex h-full items-center justify-center text-zinc-500">{closedTrades.length === 0 ? "No closed trades yet" : "No data available for these filters"}</div>
-          )}
-        </div>
+        {curve.length > 0 ? (
+          <EquityDrawdown data={curve} />
+        ) : (
+          <div className="h-40 flex items-center justify-center text-zinc-500">
+            {closedTrades.length === 0 ? "No closed trades yet" : "No data available for these filters"}
+          </div>
+        )}
       </div>
-
     </div>
   );
 }
 
-function MetricCard({ title, value, trend, sub }: { title: string, value: string, trend?: "positive" | "negative", sub?: string }) {
+function KpiCard({ title, value, format, sub, tone, spark, sparkBaseline, sparkColor, sparkLabel }: {
+  title: string; value: number; format: (v: number) => string; sub?: string; tone?: "pos" | "neg";
+  spark: number[]; sparkBaseline?: number; sparkColor?: string; sparkLabel?: string;
+}) {
+  const v = useCountUp(value);
   return (
-    <div className="border border-zinc-800/70 rounded-xl p-5 flex flex-col gap-2">
+    <div className="border border-zinc-800/70 rounded-xl p-5 flex flex-col gap-2 overflow-hidden">
       <h3 className="text-sm text-zinc-400">{title}</h3>
-      <div>
-        <div className={`text-2xl font-semibold tabular-nums ${
-          trend === "positive" ? "text-green-500" : trend === "negative" ? "text-pink-500" : "text-white"
-        }`}>
-          {value}
-        </div>
-        {sub && <div className="text-sm text-zinc-500 mt-1">{sub}</div>}
+      <div className={`text-2xl font-semibold tabular-nums ${tone === "pos" ? "text-green-500" : tone === "neg" ? "text-pink-500" : "text-white"}`}>
+        {format(v)}
       </div>
+      <div className="text-sm text-zinc-500 min-h-5">{sub}</div>
+      {spark.length > 1 && (
+        <div className="mt-1" title={sparkLabel}>
+          <Sparkline values={spark} baseline={sparkBaseline} color={sparkColor ?? (tone === "neg" ? "#ec4899" : tone === "pos" ? "#22c55e" : "#a1a1aa")} />
+        </div>
+      )}
     </div>
   );
 }
