@@ -2,30 +2,26 @@
 
 import { useState, useEffect } from "react";
 import { useData } from "@/lib/data-context";
-import { FilterX, Calendar } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { nextNewsEvent, type NewsEvent } from "@/lib/news";
+import { FiltersMenu } from "@/components/FiltersMenu";
+
+const PAIRS = ["All", "GBPUSD", "AUDUSD"];
 
 export function Header() {
   const { filters, setFilters, dataUpdated } = useData();
   const pathname = usePathname();
-  const [currentDate, setCurrentDate] = useState<{ day: string; date: string } | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
   const [nextEvent, setNextEvent] = useState<NewsEvent | null | undefined>(undefined);
 
   useEffect(() => {
-    const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-    const updateDate = () => {
+    const tick = () => {
       const d = new Date();
-      setCurrentDate({
-        day: days[d.getDay()],
-        date: `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
-      });
+      setNow(d);
       setNextEvent(nextNewsEvent(d));
     };
-    updateDate();
-    const timer = setInterval(updateDate, 60000);
+    tick();
+    const timer = setInterval(tick, 60000);
     return () => clearInterval(timer);
   }, []);
 
@@ -37,115 +33,78 @@ export function Header() {
   };
   const title = titleMap[pathname] || "Dashboard";
 
-  const togglePair = (pair: string) => {
-    setFilters(f => ({ ...f, symbol: f.symbol === pair ? "All" : pair }));
-  };
-
   return (
-    <header className="h-auto min-h-[64px] border-b border-zinc-800 bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between px-8 py-4 sticky top-0 z-20 gap-4">
-      <div className="flex items-center gap-6">
-        <h1 className="text-xl font-semibold hidden lg:block min-w-[120px]">{title}</h1>
-        
-        {/* Global Filters */}
-        <div className="flex flex-wrap items-center gap-3">
-          
-          <div className="flex items-center bg-zinc-900 border border-zinc-800 rounded-lg p-1">
-            <div className="flex items-center border-r border-zinc-700/50 pr-2 mr-2">
-              <button 
-                onClick={() => setFilters(f => ({ ...f, tradeType: "backtest" }))}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  filters.tradeType === "backtest" ? "bg-zinc-800 text-white shadow" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                Backtest
-              </button>
-              <button 
-                onClick={() => setFilters(f => ({ ...f, tradeType: "live" }))}
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  filters.tradeType === "live" ? "bg-zinc-800 text-white shadow" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                Live
-              </button>
-            </div>
-            
-            <div className="flex items-center gap-1 px-1">
-              <button 
-                onClick={() => setFilters(f => ({ ...f, symbol: "All" }))}
-                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
-                  filters.symbol === "All" ? "bg-zinc-800 text-white shadow drop-shadow-[0_0_8px_rgba(255,255,255,0.4)]" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                ALL
-              </button>
-              <button 
-                onClick={() => togglePair("GBPUSD")}
-                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
-                  filters.symbol === "GBPUSD" ? "bg-zinc-800 text-pink-400 shadow drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                GBPUSD
-              </button>
-              <button 
-                onClick={() => togglePair("AUDUSD")}
-                className={`px-3 py-1.5 rounded-md text-sm font-bold transition-all ${
-                  filters.symbol === "AUDUSD" ? "bg-zinc-800 text-green-400 shadow drop-shadow-[0_0_8px_rgba(74,222,128,0.6)]" : "text-zinc-400 hover:text-white"
-                }`}
-              >
-                AUDUSD
-              </button>
-            </div>
-          </div>
+    <header className="min-h-[64px] border-b border-zinc-800/70 bg-zinc-950 flex flex-col md:flex-row md:items-center justify-between px-8 py-3 sticky top-0 z-20 gap-4">
+      <div className="flex items-center gap-6 shrink-0">
+        <h1 className="text-base font-semibold text-white hidden lg:block min-w-[88px]">{title}</h1>
 
-          {/* Clear active day filter if any */}
-          {filters.dayOfWeek !== null && (
-            <button 
-              onClick={() => setFilters(f => ({ ...f, dayOfWeek: null }))}
-              className="flex items-center gap-1 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 px-3 py-1.5 rounded-lg text-sm transition-colors border border-blue-500/20"
-            >
-              Day Filter Active <FilterX size={14} />
-            </button>
-          )}
+        <div className="flex items-center gap-2 shrink-0">
+          <Segmented
+            options={[["backtest", "Backtest"], ["live", "Live"]]}
+            value={filters.tradeType}
+            onChange={v => setFilters(f => ({ ...f, tradeType: v as "backtest" | "live" }))}
+          />
+          <Segmented
+            options={PAIRS.map(p => [p, p === "All" ? "All pairs" : p])}
+            value={filters.symbol}
+            onChange={v => setFilters(f => ({ ...f, symbol: v }))}
+          />
+          <FiltersMenu />
         </div>
       </div>
 
-      <div className="flex items-center gap-3 self-start md:self-auto min-w-0">
-      {/* Next red-folder event */}
-      {nextEvent !== undefined && (
-        <div className="flex items-center gap-2 text-sm text-zinc-400 min-w-0 max-w-[22rem]" title={nextEvent ? `Next red-folder event (UK time): ${nextEvent.currency} ${nextEvent.event}` : undefined}>
-          <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-          {nextEvent ? (
-            <>
-              <span className="text-zinc-200 font-medium truncate">{nextEvent.currency} {nextEvent.event}</span>
-              <span className="shrink-0">· {new Date(nextEvent.at).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" })}</span>
-            </>
-          ) : (
-            <span>News calendar needs updating</span>
-          )}
-        </div>
-      )}
+      <div className="flex items-center gap-4 self-start md:self-auto min-w-0 text-sm text-zinc-400">
+        {nextEvent !== undefined && (
+          <div
+            className="flex items-center gap-2 min-w-0 max-w-[22rem]"
+            title={nextEvent ? `Next red-folder event (UK time): ${nextEvent.currency} ${nextEvent.event}` : undefined}
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />
+            {nextEvent ? (
+              <>
+                <span className="text-zinc-300 truncate">{nextEvent.currency} {nextEvent.event}</span>
+                <span className="shrink-0 tabular-nums">
+                  {new Date(nextEvent.at).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" })}
+                </span>
+              </>
+            ) : (
+              <span>News calendar needs updating</span>
+            )}
+          </div>
+        )}
 
-      {/* Top Right Date Display */}
-      <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-sm shadow-xs">
-        <Calendar size={15} className="text-zinc-400" />
-        {currentDate ? (
-          <span className="text-zinc-300 font-medium whitespace-nowrap">
-            <span className="text-white font-bold">{currentDate.day}</span>, {currentDate.date}
+        {now && (
+          <div className="whitespace-nowrap tabular-nums">
+            <span className="text-zinc-300">{now.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })}</span>
             {dataUpdated && (
-              <span className="text-zinc-500 font-normal" title={`Trade data last exported ${dataUpdated.toLocaleString("en-GB")}`}>
+              <span className="text-zinc-500" title={`Trade data last exported ${dataUpdated.toLocaleString("en-GB")}`}>
                 {" · updated "}
-                {dataUpdated.toDateString() === new Date().toDateString()
+                {dataUpdated.toDateString() === now.toDateString()
                   ? dataUpdated.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
                   : dataUpdated.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
               </span>
             )}
-          </span>
-        ) : (
-          <span className="text-zinc-500 font-mono text-xs">--</span>
+          </div>
         )}
       </div>
-      </div>
-
     </header>
+  );
+}
+
+function Segmented({ options, value, onChange }: { options: string[][]; value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="flex items-center rounded-lg border border-zinc-800 p-0.5">
+      {options.map(([v, label]) => (
+        <button
+          key={v}
+          onClick={() => onChange(v)}
+          className={`px-3 py-1 rounded-md text-sm transition-colors ${
+            value === v ? "bg-zinc-800 text-white" : "text-zinc-400 hover:text-white"
+          }`}
+        >
+          {label}
+        </button>
+      ))}
+    </div>
   );
 }

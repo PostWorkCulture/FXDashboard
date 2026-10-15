@@ -61,9 +61,9 @@ export function CalendarView() {
   return (
     <div className="flex flex-col lg:flex-row gap-6 h-full pb-8">
       {/* Calendar Grid */}
-      <div className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[600px]">
-        <div className="p-6 border-b border-zinc-800 flex justify-between items-center bg-zinc-950/50">
-          <h2 className="text-xl font-bold text-white">{format(currentDate, "MMMM yyyy")}</h2>
+      <div className="flex-1 border border-zinc-800/70 rounded-xl overflow-hidden flex flex-col min-h-[600px]">
+        <div className="p-6 border-b border-zinc-800 flex justify-between items-center ">
+          <h2 className="text-base font-semibold text-white">{format(currentDate, "MMMM yyyy")}</h2>
           <div className="flex gap-2">
             <button onClick={prevMonth} className="p-2 bg-zinc-800 rounded-md hover:bg-zinc-700 transition-colors">
               <ChevronLeft size={20} />
@@ -74,7 +74,7 @@ export function CalendarView() {
           </div>
         </div>
         
-        <div className="grid grid-cols-7 border-b border-zinc-800 bg-zinc-900">
+        <div className="grid grid-cols-7 border-b border-zinc-800/70">
           {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => (
             <div key={day} className="p-3 text-center text-xs font-semibold text-zinc-400 uppercase tracking-wider">
               {day}
@@ -89,13 +89,13 @@ export function CalendarView() {
             const isCurrentMonth = isSameMonth(day, monthStart);
             const isSelected = selectedDay && isSameDay(day, selectedDay);
             
-            let bgColor = "bg-zinc-900";
+            let bgColor = "";
             if (data) {
-              if (data.pnl > 0) bgColor = "bg-green-500/10 hover:bg-green-500/20";
-              else if (data.pnl < 0) bgColor = "bg-pink-500/10 hover:bg-pink-500/20";
+              if (data.pnl > 0) bgColor = "bg-green-500/[0.06] hover:bg-green-500/10";
+              else if (data.pnl < 0) bgColor = "bg-pink-500/[0.06] hover:bg-pink-500/10";
               else bgColor = "bg-zinc-800/50 hover:bg-zinc-800";
             } else {
-              bgColor = "bg-zinc-900 hover:bg-zinc-800/50";
+              bgColor = "hover:bg-zinc-900";
             }
 
             return (
@@ -104,10 +104,10 @@ export function CalendarView() {
                 onClick={() => setSelectedDay(day)}
                 className={`min-h-[100px] border-r border-b border-zinc-800/50 p-2 cursor-pointer transition-colors flex flex-col ${bgColor} ${
                   !isCurrentMonth ? "opacity-30" : ""
-                } ${isSelected ? "ring-2 ring-inset ring-blue-500" : ""}`}
+                } ${isSelected ? "ring-1 ring-inset ring-zinc-400" : ""}`}
               >
                 <div className="text-right">
-                  <span className={`text-sm font-medium ${isSameDay(day, new Date()) ? "bg-blue-500 text-white w-6 h-6 rounded-full inline-flex items-center justify-center" : "text-zinc-300"}`}>
+                  <span className={`text-sm font-medium ${isSameDay(day, new Date()) ? "bg-zinc-100 text-zinc-900 w-6 h-6 rounded-full inline-flex items-center justify-center" : "text-zinc-300"}`}>
                     {format(day, "d")}
                   </span>
                 </div>
@@ -137,8 +137,8 @@ export function CalendarView() {
 
       {/* Slide-out / Side Panel for Selected Day */}
       {selectedDay && (
-        <div className="w-full lg:w-96 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm flex flex-col overflow-hidden transition-all duration-300">
-          <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
+        <div className="w-full lg:w-96 border border-zinc-800/70 rounded-xl flex flex-col overflow-hidden transition-all duration-300">
+          <div className="p-6 border-b border-zinc-800  flex justify-between items-center">
             <div>
               <h3 className="text-lg font-bold text-white">{format(selectedDay, "EEEE, MMM d, yyyy")}</h3>
               <p className="text-sm text-zinc-400">{selectedDayTrades.length} {selectedDayTrades.length === 1 ? "trade" : "trades"}</p>
@@ -155,13 +155,13 @@ export function CalendarView() {
                   <div className="flex justify-between items-start">
                     <div>
                       <span className={`px-2 py-1 rounded text-xs font-semibold mr-2 ${
-                        trade.direction === "Long" ? "bg-green-500/20 text-green-400" : "bg-pink-500/20 text-pink-400"
+                        trade.direction === "Long" ? "text-green-500" : "text-pink-500"
                       }`}>
                         {trade.direction}
                       </span>
                       <span className="font-bold">{trade.symbol}</span>
                     </div>
-                    <div className={`font-bold tabular-nums ${trade.status === "open" ? "text-yellow-500" : pnlClass(trade.pnl)}`}>
+                    <div className={`font-bold tabular-nums ${trade.status === "open" ? "text-zinc-400" : pnlClass(trade.pnl)}`}>
                       {trade.status === "open" ? "Open" : usd(trade.pnl, { signed: true })}
                     </div>
                   </div>

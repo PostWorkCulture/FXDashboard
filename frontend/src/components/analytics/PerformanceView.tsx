@@ -96,13 +96,13 @@ export function PerformanceView() {
         };
       });
 
-    // P&L by Entry Day (Mon-Sun)
+    // P&L by entry day (Mon-Sun)
     const dowPnl = [0, 0, 0, 0, 0, 0, 0];
     filteredTrades.forEach(t => {
       const jsDay = new Date(t.entry_time.replace(" ", "T")).getDay();
       dowPnl[jsDay === 0 ? 6 : jsDay - 1] += t.pnl;
     });
-    const dowBreakdown = dowPnl.map((pnl, i) => ({ name: DAYS[i], pnl, dayIndex: i }));
+    const dowBreakdown = dowPnl.slice(0, 5).map((pnl, i) => ({ name: DAYS[i], pnl, dayIndex: i })); // FX trades Mon-Fri
 
     return { drawdownCurve, hourlyBreakdown, winRateData, top3Trades, bottom3Trades, tradesPerMonth, dowBreakdown };
   }, [filteredTrades]);
@@ -116,43 +116,43 @@ export function PerformanceView() {
   }
 
   return (
-    <div className="space-y-6 pb-8">
+    <div className="space-y-4 pb-8">
 
       {/* Trades Per Month Chart */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-6">Trades Taken per Month</h2>
+      <div className="border border-zinc-800/70 rounded-xl p-6">
+        <h2 className="text-sm font-medium text-zinc-300 mb-4">Trades per month</h2>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.tradesPerMonth} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="month" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
+              <CartesianGrid stroke="#1f1f23" vertical={false} />
+              <XAxis dataKey="month" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
               <Tooltip 
-                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px', fontSize: 12 }}
                 cursor={{fill: '#27272a'}}
               />
-              <Bar dataKey="trades" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="trades" fill="#52525b" radius={[2, 2, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Hourly Performance */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-6">P&L by Entry Hour <span className="text-sm font-normal text-zinc-500">(broker time)</span></h2>
+        <div className="border border-zinc-800/70 rounded-xl p-6">
+          <h2 className="text-sm font-medium text-zinc-300 mb-4">P&L by entry hour <span className="text-sm font-normal text-zinc-500">(broker time)</span></h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.hourlyBreakdown} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                <XAxis dataKey="hour" stroke="#d4d4d8" fontSize={10} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => usd(val)} width={64} />
+                <CartesianGrid stroke="#1f1f23" vertical={false} />
+                <XAxis dataKey="hour" stroke="#71717a" fontSize={10} tickLine={false} axisLine={false} interval="preserveStartEnd" />
+                <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => usd(val)} width={64} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px', fontSize: 12 }}
                   cursor={{fill: '#27272a'}}
                   formatter={(value: any) => [usd(value, { signed: true }), "P&L"]}
                 />
-                <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+                <Bar dataKey="pnl" radius={[2, 2, 0, 0]}>
                   {data.hourlyBreakdown.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.pnl >= 0 ? '#22c55e' : '#ec4899'} />
                   ))}
@@ -162,9 +162,9 @@ export function PerformanceView() {
           </div>
         </div>
 
-        {/* P&L by Entry Day (click a bar to filter Trades) */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-6">P&L by Entry Day</h2>
+        {/* P&L by entry day (click a bar to filter Trades) */}
+        <div className="border border-zinc-800/70 rounded-xl p-6">
+          <h2 className="text-sm font-medium text-zinc-300 mb-4">P&L by entry day</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
@@ -178,15 +178,15 @@ export function PerformanceView() {
                   }
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-                <XAxis dataKey="name" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => usd(val)} width={64} />
+                <CartesianGrid stroke="#1f1f23" vertical={false} />
+                <XAxis dataKey="name" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => usd(val)} width={64} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px', fontSize: 12 }}
                   cursor={{ fill: '#27272a' }}
                   formatter={(value: any) => [usd(value, { signed: true }), "P&L"]}
                 />
-                <Bar dataKey="pnl" radius={[4, 4, 0, 0]} className="cursor-pointer">
+                <Bar dataKey="pnl" radius={[2, 2, 0, 0]} className="cursor-pointer">
                   {data.dowBreakdown.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
@@ -202,41 +202,41 @@ export function PerformanceView() {
       </div>
 
       {/* Win Rate by Side + Top and Bottom Trades */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Win Rate by Side */}
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-6">Win Rate by Side (%)</h2>
+        <div className="border border-zinc-800/70 rounded-xl p-6">
+          <h2 className="text-sm font-medium text-zinc-300 mb-4">Win rate by side</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.winRateData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
-                <XAxis type="number" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
-                <YAxis dataKey="name" type="category" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} width={60} />
+                <CartesianGrid stroke="#1f1f23" horizontal={false} />
+                <XAxis type="number" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
+                <YAxis dataKey="name" type="category" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} width={60} />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
+                  contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px', fontSize: 12 }}
                   cursor={{fill: '#27272a'}}
                   formatter={(value: any) => [pct(value), "Win rate"]}
                 />
-                <Bar dataKey="winRate" radius={[0, 4, 4, 0]} barSize={40}>
-                  <Cell fill="#3b82f6" />
-                  <Cell fill="#8b5cf6" />
+                <Bar dataKey="winRate" radius={[0, 2, 2, 0]} barSize={28}>
+                  <Cell fill="#22c55e" />
+                  <Cell fill="#ec4899" />
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-green-500 mb-6">Top 3 Most Profitable Trades</h2>
-          <div className="space-y-4">
+        <div className="border border-zinc-800/70 rounded-xl p-6">
+          <h2 className="text-sm font-medium text-zinc-300 mb-4">Best 3 trades</h2>
+          <div className="divide-y divide-zinc-800/70">
             {data.top3Trades.map((t) => (
-              <div key={t.id} className="p-4 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center justify-between">
+              <div key={t.id} className="py-3 flex items-center justify-between">
                 <div>
-                  <div className="font-mono font-medium text-white">#{t.id} <span className="ml-2 text-zinc-400">{t.symbol}</span></div>
+                  <div className="text-white">{t.symbol} <span className="ml-1 text-zinc-500 tabular-nums">#{t.id}</span></div>
                   <div className="text-sm text-zinc-500">{t.entry_time.split(" ")[0]}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-green-500 tabular-nums">{usd(t.pnl, { signed: true })}</div>
+                  <div className="font-semibold text-green-500 tabular-nums">{usd(t.pnl, { signed: true })}</div>
                   <div className="text-xs text-zinc-500">{t.direction}</div>
                 </div>
               </div>
@@ -245,17 +245,17 @@ export function PerformanceView() {
           </div>
         </div>
 
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-pink-500 mb-6">Top 3 Biggest Losses</h2>
-          <div className="space-y-4">
+        <div className="border border-zinc-800/70 rounded-xl p-6">
+          <h2 className="text-sm font-medium text-zinc-300 mb-4">Worst 3 trades</h2>
+          <div className="divide-y divide-zinc-800/70">
             {data.bottom3Trades.map((t) => (
-              <div key={t.id} className="p-4 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center justify-between">
+              <div key={t.id} className="py-3 flex items-center justify-between">
                 <div>
-                  <div className="font-mono font-medium text-white">#{t.id} <span className="ml-2 text-zinc-400">{t.symbol}</span></div>
+                  <div className="text-white">{t.symbol} <span className="ml-1 text-zinc-500 tabular-nums">#{t.id}</span></div>
                   <div className="text-sm text-zinc-500">{t.entry_time.split(" ")[0]}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-pink-500 tabular-nums">{usd(t.pnl, { signed: true })}</div>
+                  <div className="font-semibold text-pink-500 tabular-nums">{usd(t.pnl, { signed: true })}</div>
                   <div className="text-xs text-zinc-500">{t.direction}</div>
                 </div>
               </div>
@@ -266,8 +266,8 @@ export function PerformanceView() {
       </div>
 
       {/* Drawdown Chart */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-        <h2 className="text-lg font-semibold mb-6">Drawdown (%)</h2>
+      <div className="border border-zinc-800/70 rounded-xl p-6">
+        <h2 className="text-sm font-medium text-zinc-300 mb-4">Drawdown</h2>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data.drawdownCurve} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
@@ -277,12 +277,12 @@ export function PerformanceView() {
                   <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
-              <XAxis dataKey="date" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
-              <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => pct(val)} width={56} />
+              <CartesianGrid stroke="#1f1f23" vertical={false} />
+              <XAxis dataKey="date" stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
+              <YAxis stroke="#71717a" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => pct(val)} width={56} />
               <Tooltip 
-                contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
-                itemStyle={{ color: '#ec4899' }}
+                contentStyle={{ backgroundColor: '#09090b', borderColor: '#27272a', borderRadius: '8px', fontSize: 12 }}
+                itemStyle={{ color: '#e4e4e7' }}
                 formatter={(value: any) => [pct(value), "Drawdown"]}
               />
               <Area type="monotone" dataKey="drawdown" stroke="#ec4899" strokeWidth={2} fillOpacity={1} fill="url(#colorDd)" />
