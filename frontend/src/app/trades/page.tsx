@@ -1,22 +1,40 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ExecutionChart } from "@/components/ExecutionChart";
+import { usd, price, pct, rMultiple, duration, pnlClass, isClosed } from "@/lib/format";
 
 export default function TradesPage() {
   const { filteredTrades, isLoading, filters, setFilters } = useData();
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedTrade, setSelectedTrade] = useState<any>(null);
+  const [notes, setNotes] = useState("");
+  const [notesSaved, setNotesSaved] = useState(false);
   const itemsPerPage = 20;
+
+  // Journal notes are kept in this browser (the site is static, there is no server to save to)
+  const notesKey = (t: any) => `pwcfx-notes-${t.trade_type}-${t.id}`;
+  useEffect(() => {
+    if (!selectedTrade) return;
+    let saved = "";
+    try { saved = localStorage.getItem(notesKey(selectedTrade)) ?? ""; } catch {}
+    setNotes(saved || selectedTrade.notes || "");
+    setNotesSaved(false);
+  }, [selectedTrade]);
+  const saveNotes = () => {
+    try { localStorage.setItem(notesKey(selectedTrade), notes); setNotesSaved(true); } catch {}
+  };
 
   if (isLoading) {
     return <div className="flex h-full items-center justify-center text-zinc-500">Loading trades...</div>;
   }
 
   // Sort descending by entry time (newest first)
-  const sortedTrades = [...filteredTrades].sort((a, b) => new Date(b.entry_time).getTime() - new Date(a.entry_time).getTime());
+  const sortedTrades = [...filteredTrades].sort((a, b) => new Date(b.entry_time.replace(" ", "T")).getTime() - new Date(a.entry_time.replace(" ", "T")).getTime());
+  const closed = sortedTrades.filter(isClosed);
+  const wins = closed.filter(t => t.pnl > 0).length;
 
   // Auto-open selected trade from global filter link
   if (filters.selectedTradeId && !selectedTrade) {
@@ -34,72 +52,30 @@ export default function TradesPage() {
 
   return (
     <div className="flex flex-col xl:flex-row gap-6 h-full pb-8">
-      <div className="flex-1 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col min-h-[600px]">
+      <div className="flex-1 border border-zinc-800/70 rounded-xl overflow-hidden flex flex-col min-h-[600px]">
         <div className="p-6 border-b border-zinc-800 flex justify-between items-center">
-          <h2 className="text-lg font-semibold">Trades ({sortedTrades.length} records)</h2>
+          <h2 className="text-lg font-semibold">Trades <span className="text-zinc-500 font-normal">({sortedTrades.length.toLocaleString("en-GB")})</span></h2>
         </div>
         
         <div className="overflow-x-auto flex-1">
           {sortedTrades.length > 0 ? (
             <table className="w-full text-sm text-left whitespace-nowrap">
-              <thead className="text-xs text-zinc-400 uppercase bg-zinc-900/50 border-b border-zinc-800">
+              <thead className="text-xs text-zinc-500 border-b border-zinc-800/70">
                 <tr>
-                  <th className="px-6 py-4 font-medium align-top">Trades</th>
-                  <th className="px-6 py-4 font-medium">
-                    <div className="flex flex-col gap-2">
-                      <span>Symbol</span>
-                      <select 
-                        className="bg-zinc-800 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300 outline-none w-24"
-                        value={filters.symbol}
-                        onChange={(e) => setFilters(f => ({ ...f, symbol: e.target.value }))}
-                      >
-                        <option value="All">All</option>
-                        <option value="EURUSD">EURUSD</option>
-                        <option value="GBPUSD">GBPUSD</option>
-                        <option value="AUDUSD">AUDUSD</option>
-                      </select>
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 font-medium">
-                    <div className="flex flex-col gap-2">
-                      <span>Side</span>
-                      <select 
-                        className="bg-zinc-800 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300 outline-none w-24"
-                        value={filters.direction}
-                        onChange={(e) => setFilters(f => ({ ...f, direction: e.target.value }))}
-                      >
-                        <option value="All">All</option>
-                        <option value="Long">Long</option>
-                        <option value="Short">Short</option>
-                      </select>
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 font-medium">
-                    <div className="flex flex-col gap-2">
-                      <span>Entry</span>
-                      <select 
-                        className="bg-zinc-800 border border-zinc-700 text-xs rounded px-2 py-1 text-zinc-300 outline-none w-28"
-                        value={filters.dateRange}
-                        onChange={(e) => setFilters(f => ({ ...f, dateRange: e.target.value as any }))}
-                      >
-                        <option value="All">All</option>
-                        <option value="Today">Today</option>
-                        <option value="This Week">This Week</option>
-                        <option value="This Month">This Month</option>
-                        <option value="Last Month">Last Month</option>
-                        <option value="This Year">This Year</option>
-                      </select>
-                    </div>
-                  </th>
-                  <th className="px-6 py-4 font-medium align-top">Day</th>
-                  <th className="px-6 py-4 font-medium align-top">Exit</th>
-                  <th className="px-6 py-4 font-medium align-top">Duration</th>
-                  <th className="px-6 py-4 font-medium align-top">Entry £</th>
-                  <th className="px-6 py-4 font-medium align-top">Exit £</th>
-                  <th className="px-6 py-4 font-medium text-right align-top">P&L</th>
+                  <th className="px-4 py-3 font-medium">#</th>
+                  <th className="px-4 py-3 font-medium">Pair</th>
+                  <th className="px-4 py-3 font-medium">Side</th>
+                  <th className="px-4 py-3 font-medium">Entry</th>
+                  <th className="px-4 py-3 font-medium">Day</th>
+                  <th className="px-4 py-3 font-medium">Exit</th>
+                  <th className="px-4 py-3 font-medium">Duration</th>
+                  <th className="px-4 py-3 font-medium text-right">Entry Price</th>
+                  <th className="px-4 py-3 font-medium text-right">Exit Price</th>
+                  <th className="px-4 py-3 font-medium text-right">P&L</th>
+                  <th className="px-4 py-3 font-medium text-right">R</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y divide-zinc-800/60">
                 {currentTrades.map((trade) => {
                   const entryDate = new Date(trade.entry_time.replace(" ", "T"));
                   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -108,37 +84,30 @@ export default function TradesPage() {
                   <tr 
                     key={trade.id} 
                     onClick={() => setSelectedTrade(trade)}
-                    className={`hover:bg-zinc-800/50 transition-colors cursor-pointer ${selectedTrade?.id === trade.id ? "bg-zinc-800/80" : ""}`}
+                    className={`hover:bg-zinc-900 transition-colors cursor-pointer ${selectedTrade?.id === trade.id ? "bg-zinc-900" : ""}`}
                   >
-                    <td className="px-6 py-4 text-zinc-500 font-mono">
+                    <td className="px-4 py-2.5 text-zinc-500 font-mono">
                       #{trade.id}
-                      {trade.status === 'open' && <span className="ml-2 inline-block w-2 h-2 rounded-full bg-yellow-500 animate-pulse" title="Open Trade"></span>}
+                      {trade.status === 'open' && <span className="ml-2 inline-block w-1.5 h-1.5 rounded-full bg-amber-400" title="Open trade"></span>}
                     </td>
-                    <td className="px-6 py-4 font-medium">{trade.symbol}</td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-2.5 font-medium">{trade.symbol}</td>
+                    <td className="px-4 py-2.5">
                       <span className={`px-2 py-1 rounded-md text-xs font-medium ${
-                        trade.direction === "Long" ? "bg-green-500/10 text-green-500" : "bg-pink-500/10 text-pink-500"
+                        trade.direction === "Long" ? "text-green-500" : "text-pink-500"
                       }`}>
                         {trade.direction}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-zinc-400">{trade.entry_time.split(".")[0]}</td>
-                    <td className="px-6 py-4 text-zinc-400">{dayName}</td>
-                    <td className="px-6 py-4 text-zinc-400">{trade.exit_time ? trade.exit_time.split(".")[0] : "-"}</td>
-                    <td className="px-6 py-4 text-zinc-400">
-                      {trade.duration_hours ? (
-                        trade.duration_hours >= 24 
-                          ? `${Math.floor(trade.duration_hours/24)}d ${trade.duration_hours%24}h` 
-                          : `${trade.duration_hours}h`
-                      ) : '-'}
+                    <td className="px-4 py-2.5 text-zinc-400 tabular-nums">{trade.entry_time.slice(0, 16)}</td>
+                    <td className="px-4 py-2.5 text-zinc-400">{dayName}</td>
+                    <td className="px-4 py-2.5 text-zinc-400 tabular-nums">{trade.exit_time ? trade.exit_time.slice(0, 16) : "—"}</td>
+                    <td className="px-4 py-2.5 text-zinc-400">{duration(trade.duration_hours)}</td>
+                    <td className="px-4 py-2.5 text-zinc-400 text-right tabular-nums">{price(trade.entry_price)}</td>
+                    <td className="px-4 py-2.5 text-zinc-400 text-right tabular-nums">{price(trade.exit_price)}</td>
+                    <td className={`px-4 py-2.5 text-right font-medium tabular-nums ${isClosed(trade) ? pnlClass(trade.pnl) : "text-zinc-400"}`}>
+                      {isClosed(trade) ? usd(trade.pnl, { signed: true }) : "Open"}
                     </td>
-                    <td className="px-6 py-4 text-zinc-400 font-mono">{trade.entry_price.toFixed(5)}</td>
-                    <td className="px-6 py-4 text-zinc-400 font-mono">{trade.exit_price ? trade.exit_price.toFixed(5) : "-"}</td>
-                    <td className={`px-6 py-4 text-right font-medium font-mono ${
-                      trade.pnl >= 0 ? "text-green-500" : "text-pink-500"
-                    }`}>
-                      {trade.pnl >= 0 ? "+" : ""}${Math.abs(trade.pnl).toFixed(2)}
-                    </td>
+                    <td className="px-4 py-2.5 text-right text-zinc-400 tabular-nums">{rMultiple(trade.r_multiple)}</td>
                   </tr>
                 );
               })}
@@ -153,18 +122,18 @@ export default function TradesPage() {
 
         {/* Pagination & Stats */}
         {sortedTrades.length > 0 && (
-          <div className="p-4 border-t border-zinc-800 flex flex-col md:flex-row md:items-center justify-between bg-zinc-900/50 gap-4">
+          <div className="p-4 border-t border-zinc-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex flex-col md:flex-row md:items-center gap-4 text-sm">
               <span className="text-zinc-500">
                 Showing {startIndex + 1} to {Math.min(startIndex + itemsPerPage, sortedTrades.length)} of {sortedTrades.length}
               </span>
               <div className="h-4 w-px bg-zinc-700 hidden md:block"></div>
               <div className="flex items-center gap-3 text-zinc-300">
-                <span className="font-medium">Total: {sortedTrades.length}</span>
-                <span className="text-green-400">W: {sortedTrades.filter(t => t.pnl > 0).length}</span>
-                <span className="text-pink-400">L: {sortedTrades.filter(t => t.pnl <= 0).length}</span>
+                <span>{closed.length} closed</span>
+                <span>W {wins}</span>
+                <span>L {closed.length - wins}</span>
                 <span className="font-semibold text-white ml-1">
-                  {sortedTrades.length > 0 ? (sortedTrades.filter(t => t.pnl > 0).length / sortedTrades.length * 100).toFixed(1) : "0.0"}% Win
+                  {pct(closed.length > 0 ? (wins / closed.length) * 100 : 0)} win rate
                 </span>
               </div>
             </div>
@@ -193,7 +162,7 @@ export default function TradesPage() {
 
       {/* Slide-out / Side Panel for Selected Trade */}
       {selectedTrade && (
-        <div className="w-full xl:w-[600px] shrink-0 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm flex flex-col overflow-hidden transition-all duration-300">
+        <div className="w-full xl:w-[600px] shrink-0 border border-zinc-800/70 rounded-xl flex flex-col overflow-hidden transition-all duration-300">
           <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
             <div>
               <h3 className="text-lg font-bold text-white">Trade #{selectedTrade.id}</h3>
@@ -213,25 +182,25 @@ export default function TradesPage() {
 
             <div className="flex justify-between items-center pb-4 border-b border-zinc-800">
               <span className={`px-3 py-1 rounded-md text-sm font-semibold ${
-                selectedTrade.direction === "Long" ? "bg-green-500/20 text-green-400" : "bg-pink-500/20 text-pink-400"
+                selectedTrade.direction === "Long" ? "text-green-500" : "text-pink-500"
               }`}>
                 {selectedTrade.direction}
               </span>
-              <span className={`text-xl font-bold font-mono ${selectedTrade.pnl >= 0 ? "text-green-500" : "text-pink-500"}`}>
-                {selectedTrade.pnl >= 0 ? "+" : ""}${selectedTrade.pnl.toFixed(2)}
+              <span className={`text-xl font-bold tabular-nums ${isClosed(selectedTrade) ? pnlClass(selectedTrade.pnl) : "text-zinc-400"}`}>
+                {isClosed(selectedTrade) ? usd(selectedTrade.pnl, { signed: true }) : "Open"}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <div className="text-zinc-500 mb-1">Entry Price</div>
-                <div className="font-mono text-white">{selectedTrade.entry_price.toFixed(5)}</div>
-                <div className="text-xs text-zinc-600 mt-1">{selectedTrade.entry_time.split(" ")[1].split(".")[0]}</div>
+                <div className="text-white tabular-nums">{price(selectedTrade.entry_price)}</div>
+                <div className="text-xs text-zinc-600 mt-1">{selectedTrade.entry_time.slice(0, 16)}</div>
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">Exit Price</div>
-                <div className="font-mono text-white">{selectedTrade.exit_price ? selectedTrade.exit_price.toFixed(5) : "-"}</div>
-                <div className="text-xs text-zinc-600 mt-1">{selectedTrade.exit_time ? selectedTrade.exit_time.split(" ")[1].split(".")[0] : "Open"}</div>
+                <div className="text-white tabular-nums">{price(selectedTrade.exit_price)}</div>
+                <div className="text-xs text-zinc-600 mt-1">{selectedTrade.exit_time ? selectedTrade.exit_time.slice(0, 16) : "Open"}</div>
               </div>
             </div>
 
@@ -246,27 +215,33 @@ export default function TradesPage() {
                   <div className="font-medium text-white">{selectedTrade.exit_reason || "-"}</div>
                 </div>
               )}
+              {(selectedTrade.sl != null || selectedTrade.tp != null) && (
+                <>
+                  <div>
+                    <div className="text-zinc-500 mb-1">Stop Loss</div>
+                    <div className="text-white tabular-nums">{price(selectedTrade.sl)}</div>
+                  </div>
+                  <div>
+                    <div className="text-zinc-500 mb-1">Take Profit</div>
+                    <div className="text-white tabular-nums">{price(selectedTrade.tp)}</div>
+                  </div>
+                </>
+              )}
               <div>
                 <div className="text-zinc-500 mb-1">Duration</div>
-                <div className="font-medium text-white">
-                  {selectedTrade.duration_hours ? (
-                    selectedTrade.duration_hours >= 24 
-                      ? `${Math.floor(selectedTrade.duration_hours/24)}d ${selectedTrade.duration_hours%24}h` 
-                      : `${selectedTrade.duration_hours}h`
-                  ) : "-"}
-                </div>
+                <div className="font-medium text-white">{duration(selectedTrade.duration_hours)}</div>
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">R-Multiple</div>
-                <div className="font-medium text-white">{selectedTrade.r_multiple?.toFixed(2) || "-"}R</div>
+                <div className="font-medium text-white tabular-nums">{rMultiple(selectedTrade.r_multiple)}</div>
               </div>
               <div>
-                <div className="text-zinc-500 mb-1">Max Favorable</div>
-                <div className="font-medium text-green-500">{selectedTrade.mfe_pips ? `+${selectedTrade.mfe_pips.toFixed(1)}` : "-"} pips</div>
+                <div className="text-zinc-500 mb-1">Max Favourable</div>
+                <div className="font-medium text-green-500">{selectedTrade.mfe_pips != null ? `+${selectedTrade.mfe_pips.toFixed(1)} pips` : "—"}</div>
               </div>
               <div>
                 <div className="text-zinc-500 mb-1">Max Adverse</div>
-                <div className="font-medium text-pink-500">{selectedTrade.mae_pips ? `-${selectedTrade.mae_pips.toFixed(1)}` : "-"} pips</div>
+                <div className="font-medium text-pink-500">{selectedTrade.mae_pips != null ? `\u2212${selectedTrade.mae_pips.toFixed(1)} pips` : "—"}</div>
               </div>
             </div>
 
@@ -285,10 +260,11 @@ export default function TradesPage() {
                 <textarea 
                   className="w-full bg-zinc-950 border border-zinc-800 rounded-md p-3 text-sm text-white h-24 outline-none focus:border-zinc-600 transition-colors resize-none"
                   placeholder="Write your reflections here..."
-                  defaultValue={selectedTrade.notes || ""}
+                  value={notes}
+                  onChange={(e) => { setNotes(e.target.value); setNotesSaved(false); }}
                 />
-                <button className="mt-2 w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-md transition-colors">
-                  Save Notes
+                <button onClick={saveNotes} className="mt-2 w-full bg-zinc-100 hover:bg-white text-zinc-900 text-sm font-medium py-2 rounded-md transition-colors">
+                  {notesSaved ? "Saved (this browser)" : "Save Notes"}
                 </button>
               </div>
             </div>

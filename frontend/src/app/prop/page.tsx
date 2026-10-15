@@ -1,195 +1,143 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useData } from "@/lib/data-context";
-import { Target, Clock, DollarSign } from "lucide-react";
+import { Target, Clock, ShieldAlert, Newspaper } from "lucide-react";
+import { usd, pct as fmtPct } from "@/lib/format";
+
+// Everything on this page comes from public/data/strategy.json, written by python/export_dashboard.py
+// from the same config the EA and backtest use - nothing here is typed in by hand.
+interface PairCfg { rsi_low: number; rsi_high: number; sl: number; tp: number; bad_days: number[]; bad_hours: number[]; cost_pips: number }
+interface PhaseStats { pass?: number; fail?: number; running?: number; median_days_to_pass?: number | null; windows?: number }
+interface Strategy {
+  version: string; generated: string; period: [string, string];
+  pairs: Record<string, PairCfg>;
+  portfolio: { start_balance: number; risk_pct: number; max_open: number; daily_guard_pct: number; daily_hard_stop_pct: number };
+  backtest: { trades: number; final_balance: number; max_dd_pct: number; per_pair: Record<string, { trades: number; win_rate: number; profit_factor: number; pnl: number }> };
+  prop: { phase1: PhaseStats; phase2: PhaseStats; rules: string };
+}
+
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function PropPage() {
   const { filters } = useData();
+  const [s, setS] = useState<Strategy | null>(null);
+  const [err, setErr] = useState(false);
 
-  const pairIntel = [
-    {
-      pair: "EURUSD",
-      p1Days: 18,
-      p2Days: 12,
-      target: "8% Phase 1 / 5% Phase 2",
-      fundedPayout: "4% Monthly",
-      description: "Steady, highly liquid behavior makes EURUSD ideal for consistent, low-drawdown prop challenges.",
-      color: "blue",
-      entryRule: "H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
-      riskReward: "Strictly 1:2 ratio (40 pips SL / 80 pips TP).",
-      timeFilterBlocks: [
-        { day: "Monday", restriction: "09:00, 13:00, 22:00" },
-        { day: "Tuesday", restriction: "No Trade Day" },
-        { day: "Wednesday", restriction: "No Trade Day" },
-        { day: "Thursday", restriction: "09:00, 13:00, 22:00" },
-        { day: "Friday", restriction: "09:00, 13:00, 22:00" },
-      ],
-      newsFilter: "Pre-emptive abort on USD/EUR Red Folder events (5%ers compliant)."
-    },
-    {
-      pair: "GBPUSD",
-      p1Days: 22,
-      p2Days: 15,
-      target: "8% Phase 1 / 5% Phase 2",
-      fundedPayout: "5% Monthly",
-      description: "Higher volatility yields larger percentage returns but requires slightly wider stops and patience.",
-      color: "pink",
-      entryRule: "H1 RSI (14) crosses below 30 (Long) or above 70 (Short).",
-      riskReward: "Strictly 1:2 ratio (80 pips SL / 160 pips TP).",
-      timeFilterBlocks: [
-        { day: "Monday", restriction: "02:00, 10:00, 14:00" },
-        { day: "Tuesday", restriction: "02:00, 10:00, 14:00" },
-        { day: "Wednesday", restriction: "No Trade Day" },
-        { day: "Thursday", restriction: "02:00, 10:00, 14:00" },
-        { day: "Friday", restriction: "No Trade Day" },
-      ],
-      newsFilter: "Pre-emptive abort on USD/GBP Red Folder events (5%ers compliant)."
-    },
-    {
-      pair: "AUDUSD",
-      p1Days: 28,
-      p2Days: 18,
-      target: "8% Phase 1 / 5% Phase 2",
-      fundedPayout: "3.5% Monthly",
-      description: "Slower trends and Asian session overlap require a longer timeline to pass standard prop firm parameters.",
-      color: "green",
-      entryRule: "H1 RSI (14) crosses below 25 (Long) or above 75 (Short).",
-      riskReward: "Strictly 1:2 ratio (50 pips SL / 100 pips TP).",
-      timeFilterBlocks: [
-        { day: "Monday", restriction: "07:00, 09:00, 13:00, 16:00, 21:00, 22:00" },
-        { day: "Tuesday", restriction: "No Trade Day" },
-        { day: "Wednesday", restriction: "No Trade Day" },
-        { day: "Thursday", restriction: "07:00, 09:00, 13:00, 16:00, 21:00, 22:00" },
-        { day: "Friday", restriction: "07:00, 09:00, 13:00, 16:00, 21:00, 22:00" },
-      ],
-      newsFilter: "Pre-emptive abort on USD/AUD Red Folder events (5%ers compliant)."
-    }
-  ];
+  useEffect(() => {
+    const basePath = process.env.NODE_ENV === "production" ? "/FXDashboard" : "";
+    fetch(`${basePath}/data/strategy.json`).then(r => (r.ok ? r.json() : Promise.reject())).then(setS).catch(() => setErr(true));
+  }, []);
 
-  const visibleIntel = filters.symbol === "All" 
-    ? pairIntel 
-    : pairIntel.filter(p => p.pair === filters.symbol);
+  if (err) return <div className="py-12 text-center text-zinc-500">strategy.json not found - run python/export_dashboard.py</div>;
+  if (!s) return <div className="flex h-full items-center justify-center text-zinc-500">Loading strategy...</div>;
+
+  const pairs = Object.entries(s.pairs).filter(([p]) => filters.symbol === "All" || p === filters.symbol);
+  const pf = s.portfolio;
+  const pct = (v?: number) => (v == null ? "—" : fmtPct(v));
 
   return (
     <div className="flex flex-col gap-6 h-full pb-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {visibleIntel.map(intel => (
-          <div key={intel.pair} className="bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
-            <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
+      {/* Challenge outlook (portfolio) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {([["Phase 1", "8% target", s.prop.phase1], ["Phase 2", "5% target", s.prop.phase2]] as const).map(([name, tgt, st]) => (
+          <div key={name} className="border border-zinc-800/70 rounded-xl p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400"><Clock size={18} /></div>
               <div>
-                <h3 className="text-2xl font-bold text-white mb-1">{intel.pair}</h3>
-                <p className="text-sm text-zinc-500">{intel.target}</p>
+                <h3 className="font-semibold text-white">{name} <span className="text-zinc-500 font-normal">({tgt})</span></h3>
+                <p className="text-xs text-zinc-500">Backtested challenge starts every 7 days, {st.windows ?? "-"} windows</p>
               </div>
             </div>
-            
-            <div className="p-6 flex-1 flex flex-col gap-6">
-              
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                  <Clock size={18} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-white">Phase 1 (P1)</span>
-                    <span className="text-sm font-bold text-zinc-300">~{intel.p1Days} Days</span>
-                  </div>
-                  <div className="w-full bg-zinc-800 rounded-full h-1.5">
-                    <div className="bg-zinc-500 h-1.5 rounded-full" style={{ width: '40%' }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                  <Clock size={18} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <span className="text-sm font-medium text-white">Phase 2 (P2)</span>
-                    <span className="text-sm font-bold text-zinc-300">~{intel.p2Days} Days</span>
-                  </div>
-                  <div className="w-full bg-zinc-800 rounded-full h-1.5">
-                    <div className="bg-zinc-500 h-1.5 rounded-full" style={{ width: '60%' }}></div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4 p-4 rounded-lg bg-zinc-800/30 border border-zinc-800/50 mt-2">
-                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
-                  <DollarSign size={20} />
-                </div>
-                <div>
-                  <div className="text-sm text-zinc-400">Target Funded Payout</div>
-                  <div className="text-lg font-bold text-green-500">{intel.fundedPayout}</div>
-                </div>
-              </div>
-
-              <div className="mt-auto pt-4 border-t border-zinc-800/50 text-sm text-zinc-400 leading-relaxed">
-                {intel.description}
-              </div>
-
-              <div className="pt-4 border-t border-zinc-800/50 space-y-3">
-                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Algo Entry Rules</h4>
-                
-                <div className="flex items-start gap-2 text-sm text-zinc-300">
-                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
-                  <div>
-                    <span className="font-semibold text-white">Falling Knife Entry:</span> {intel.entryRule}
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 text-sm text-zinc-300">
-                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
-                  <div>
-                    <span className="font-semibold text-white">Risk/Reward:</span> {intel.riskReward}
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 text-sm text-zinc-300">
-                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
-                  <div className="flex-1">
-                    <span className="font-semibold text-white block mb-1.5">Time Filters Blocks:</span>
-                    <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-lg p-2.5 space-y-1 font-mono text-xs">
-                      {intel.timeFilterBlocks.map((tf, i) => (
-                        <div key={i} className="flex items-center">
-                          <span className="text-zinc-400 w-28 shrink-0">{tf.day} -</span>
-                          <span className={tf.restriction === "No Trade Day" ? "text-rose-400 font-semibold" : "text-zinc-300"}>
-                            {tf.restriction}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-2 text-sm text-zinc-300">
-                  <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
-                  <div>
-                    <span className="font-semibold text-white">News Filter:</span> {intel.newsFilter}
-                  </div>
-                </div>
-              </div>
-
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="bg-zinc-950 rounded-lg p-3 border border-zinc-800/50"><div className="text-xs text-zinc-500">Pass</div><div className="text-xl font-bold text-green-500">{pct(st.pass)}</div></div>
+              <div className="bg-zinc-950 rounded-lg p-3 border border-zinc-800/50"><div className="text-xs text-zinc-500">Fail</div><div className="text-xl font-bold text-pink-500">{pct(st.fail)}</div></div>
+              <div className="bg-zinc-950 rounded-lg p-3 border border-zinc-800/50"><div className="text-xs text-zinc-500">Median days</div><div className="text-xl font-bold text-white">{st.median_days_to_pass ?? "-"}</div></div>
             </div>
           </div>
         ))}
-        {visibleIntel.length === 0 && (
-          <div className="col-span-3 py-12 text-center text-zinc-500 bg-zinc-900 border border-zinc-800 rounded-xl">
-            No prop firm intel available for the selected filters.
-          </div>
-        )}
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 border-dashed rounded-xl p-8 flex flex-col items-center justify-center text-center mt-4">
-        <div className="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-500 mb-4">
-          <Target size={24} />
+      {/* Pair rule cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {pairs.map(([pair, c]) => {
+          const bt = s.backtest.per_pair[pair];
+          return (
+            <div key={pair} className="border border-zinc-800/70 rounded-xl overflow-hidden flex flex-col">
+              <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-white">{pair}</h3>
+                <span className="text-xs px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-400">EA v{s.version}</span>
+              </div>
+              <div className="p-6 space-y-3 text-sm text-zinc-300">
+                <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider">Algo Rules</h4>
+                <Rule label="Long">H1 RSI(14) closes below {c.rsi_low} (previous bar at or above {c.rsi_low}).</Rule>
+                <Rule label="Short">H1 RSI(14) closes above {c.rsi_high} (previous bar at or below {c.rsi_high}).</Rule>
+                <Rule label="Execution">Market order at the open of the next H1 bar.</Rule>
+                <Rule label="Risk/Reward">SL {c.sl} pips / TP {c.tp} pips (1:{(c.tp / c.sl).toFixed(0)}). Opposite signal closes and reverses.</Rule>
+                <Rule label="Time filters">
+                  {c.bad_days.length || c.bad_hours.length
+                    ? `Blocked days: ${c.bad_days.map(d => DAYS[d]).join(", ") || "none"}; hours: ${c.bad_hours.join(", ") || "none"}`
+                    : "None. Day/hour filters were dropped in v4 because they failed out-of-sample."}
+                </Rule>
+                {bt && (
+                  <div className="grid grid-cols-4 gap-2 pt-4 mt-2 border-t border-zinc-800/50 text-center">
+                    <Stat k="Trades" v={bt.trades.toString()} />
+                    <Stat k="Win rate" v={fmtPct(bt.win_rate)} />
+                    <Stat k="Profit factor" v={bt.profit_factor.toFixed(2)} />
+                    <Stat k="Backtest P&L" v={usd(bt.pnl, { signed: true })} />
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Portfolio protection */}
+      <div className="border border-zinc-800/70 rounded-xl p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <ShieldAlert size={20} className="text-zinc-400" />
+          <h3 className="font-semibold text-white">Account Protection (all pairs)</h3>
         </div>
-        <h3 className="text-lg font-semibold text-white mb-2">More intel coming soon</h3>
-        <p className="text-zinc-500 max-w-md">
-          Advanced Prop Firm analytics, drawdown simulators, and broker integration parameters will be added in the next intelligence update.
-        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+          <Stat k="Risk per trade" v={`${pf.risk_pct}% of balance`} />
+          <Stat k="Max open positions" v={pf.max_open.toString()} />
+          <Stat k="Daily entry guard" v={`${pf.daily_guard_pct}%`} />
+          <Stat k="Daily hard stop" v={`${pf.daily_hard_stop_pct}%`} />
+        </div>
+        <ul className="mt-4 space-y-1 text-sm text-zinc-400 list-disc list-inside">
+          <li>No new trade if today&apos;s closed loss + open risk + the new trade&apos;s risk could exceed {pf.daily_guard_pct}% of the day&apos;s starting balance.</li>
+          <li>If equity drops {pf.daily_hard_stop_pct}% below the day&apos;s starting balance, all EA trades close and trading stops until the next server day.</li>
+          <li>Trading stops automatically once the phase target and minimum profitable days are both reached.</li>
+        </ul>
+        <div className="flex items-start gap-2 mt-4 text-sm text-zinc-400">
+          <Newspaper size={16} className="mt-0.5 shrink-0" />
+          <span>News filter (live only): no new entries within 60 minutes before or 30 minutes after a high-impact USD or base-currency event. Not included in the backtest; MT5&apos;s calendar has no history in the Strategy Tester.</span>
+        </div>
       </div>
 
+      <div className="text-xs text-zinc-600 flex items-center gap-2">
+        <Target size={12} /> Backtest {s.period[0].slice(0, 10)} to {s.period[1].slice(0, 10)} (broker time): {s.backtest.trades} trades,
+        {usd(pf.start_balance)} to {usd(s.backtest.final_balance)}, max drawdown {fmtPct(s.backtest.max_dd_pct)}. Rules: {s.prop.rules}. Generated {s.generated}.
+      </div>
+    </div>
+  );
+}
+
+function Rule({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-start gap-2">
+      <div className="w-1.5 h-1.5 rounded-full bg-zinc-600 mt-2 shrink-0"></div>
+      <div><span className="font-semibold text-white">{label}:</span> {children}</div>
+    </div>
+  );
+}
+
+function Stat({ k, v }: { k: string; v: string }) {
+  return (
+    <div className="bg-zinc-950 rounded-lg p-3 border border-zinc-800/50">
+      <div className="text-xs text-zinc-500">{k}</div>
+      <div className="font-semibold text-white">{v}</div>
     </div>
   );
 }

@@ -7,12 +7,15 @@ export interface Trade {
   trade_type: string;
   symbol: string;
   direction: string;
-  entry_time: string;
-  exit_time: string;
+  entry_time: string;          // broker server time "YYYY-MM-DD HH:MM:SS"
+  exit_time: string | null;     // null while open
   entry_price: number;
-  exit_price: number;
+  exit_price: number | null;
+  sl?: number | null;
+  tp?: number | null;
+  lots?: number | null;
   pnl: number;
-  is_win: boolean;
+  is_win: boolean | null;
   duration_hours?: number;
   mae_pips?: number;
   mfe_pips?: number;
@@ -39,7 +42,10 @@ interface DataContextType {
   setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
   rawTrades: Trade[];
   filteredTrades: Trade[];
-  ohlcv: any[];
+  /** filteredTrades minus open positions — use for every statistic. */
+  closedTrades: Trade[];
+  /** When the trade file was last written (from the server's Last-Modified header). */
+  dataUpdated: Date | null;
   isLoading: boolean;
 }
 
@@ -55,8 +61,8 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   });
   
   const [rawTrades, setRawTrades] = useState<Trade[]>([]);
-  const [ohlcv, setOhlcv] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [dataUpdated, setDataUpdated] = useState<Date | null>(null);
 
   // Fetch raw trades based on tradeType toggle
   useEffect(() => {
@@ -65,22 +71,18 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       try {
         const basePath = process.env.NODE_ENV === "production" ? "/FXDashboard" : "";
         
-        const [tradesRes, ohlcvRes] = await Promise.all([
-          fetch(`${basePath}/data/raw_trades-${filters.tradeType}.json`),
-          fetch(`${basePath}/data/eurusd_h1_candles.json`)
-        ]);
+        const tradesRes = await fetch(`${basePath}/data/raw_trades-${filters.tradeType}.json`);
 
         if (tradesRes.ok) {
           const data = await tradesRes.json();
           setRawTrades(data);
+          const lm = tradesRes.headers.get("last-modified");
+          setDataUpdated(lm ? new Date(lm) : null);
         } else {
           setRawTrades([]);
+          setDataUpdated(null);
         }
 
-        if (ohlcvRes.ok) {
-          const candleData = await ohlcvRes.json();
-          setOhlcv(candleData);
-        }
       } catch (err) {
         console.error("Failed to load data", err);
         setRawTrades([]);
@@ -141,8 +143,13 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
     });
   }, [rawTrades, filters]);
 
+  const closedTrades = useMemo(
+    () => filteredTrades.filter(t => t.status !== "open" && t.exit_time != null),
+    [filteredTrades]
+  );
+
   return (
-    <DataContext.Provider value={{ filters, setFilters, rawTrades, filteredTrades, ohlcv, isLoading }}>
+    <DataContext.Provider value={{ filters, setFilters, rawTrades, filteredTrades, closedTrades, dataUpdated, isLoading }}>
       {children}
     </DataContext.Provider>
   );

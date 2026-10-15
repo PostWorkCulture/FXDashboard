@@ -1,0 +1,71 @@
+{
+ "version": "4.00",
+ "generated": "2026-10-15 14:27",
+ "period": [
+  "2018-09-17 15:00:00",
+  "2026-10-05 21:00:00"
+ ],
+ "pairs": {
+  "GBPUSD": {
+   "rsi_low": 25,
+   "rsi_high": 75,
+   "sl": 50,
+   "tp": 150,
+   "bad_days": [],
+   "bad_hours": [],
+   "cost_pips": 1.8
+  },
+  "AUDUSD": {
+   "rsi_low": 20,
+   "rsi_high": 80,
+   "sl": 50,
+   "tp": 150,
+   "bad_days": [],
+   "bad_hours": [],
+   "cost_pips": 1.5
+  }
+ },
+ "portfolio": {
+  "start_balance": 25000.0,
+  "risk_pct": 2.0,
+  "max_open": 2,
+  "daily_guard_pct": 4.0,
+  "daily_hard_stop_pct": 4.5,
+  "lot_step": 0.01,
+  "pip_value_per_lot": 10.0
+ },
+ "backtest": {
+  "trades": 573,
+  "final_balance": 63120.0,
+  "max_dd_pct": 44.1,
+  "per_pair": {
+   "AUDUSD": {
+    "trades": 118,
+    "win_rate": 35.6,
+    "profit_factor": 1.27,
+    "pnl": 19345.0
+   },
+   "GBPUSD": {
+    "trades": 455,
+    "win_rate": 28.8,
+    "profit_factor": 1.07,
+    "pnl": 18775.0
+   }
+  }
+ },
+ "prop": {
+  "phase1": {
+   "pass": 67.6,
+   "fail": 32.4,
+   "median_days_to_pass": 42.0,
+   "windows": 395.0
+  },
+  "phase2": {
+   "pass": 70.6,
+   "fail": 29.4,
+   "median_days_to_pass": 38.0,
+   "windows": 395.0
+  },
+  "rules": "8% / 5% targets, 5% daily loss, 10% max loss, 3 profitable days, 180-day window"
+ }
+}
