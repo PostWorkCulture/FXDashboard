@@ -1,6 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
+import { usd, price, rMultiple, duration, pnlClass } from "@/lib/format";
 import { useState, useMemo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import {
@@ -18,7 +19,7 @@ import {
 } from "date-fns";
 
 export function CalendarView() {
-  const { filteredTrades, isLoading } = useData();
+  const { filteredTrades, closedTrades, isLoading } = useData();
   const [currentDate, setCurrentDate] = useState(new Date()); 
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
 
@@ -28,7 +29,7 @@ export function CalendarView() {
   // Compute Daily Aggregates
   const dailyData = useMemo(() => {
     const map = new Map<string, { pnl: number; trades: number; wins: number; symbols: Set<string> }>();
-    filteredTrades.forEach(t => {
+    closedTrades.forEach(t => {
       const dateStr = t.entry_time.split(" ")[0]; // YYYY-MM-DD
       if (!map.has(dateStr)) {
         map.set(dateStr, { pnl: 0, trades: 0, wins: 0, symbols: new Set() });
@@ -36,11 +37,11 @@ export function CalendarView() {
       const dayData = map.get(dateStr)!;
       dayData.pnl += t.pnl;
       dayData.trades += 1;
-      if (t.is_win) dayData.wins += 1;
+      if (t.pnl > 0) dayData.wins += 1;
       dayData.symbols.add(t.symbol);
     });
     return map;
-  }, [filteredTrades]);
+  }, [closedTrades]);
 
   if (isLoading) {
     return <div className="flex h-full items-center justify-center text-zinc-500">Loading calendar...</div>;
@@ -119,11 +120,11 @@ export function CalendarView() {
                         </span>
                       ))}
                     </div>
-                    <div className={`text-sm font-bold ${data.pnl >= 0 ? "text-green-500" : "text-pink-500"}`}>
-                      {data.pnl >= 0 ? "+" : ""}${data.pnl.toFixed(2)}
+                    <div className={`text-sm font-bold tabular-nums ${pnlClass(data.pnl)}`}>
+                      {usd(data.pnl, { signed: true })}
                     </div>
                     <div className="text-xs text-zinc-500 flex justify-between">
-                      <span>{data.trades} trades</span>
+                      <span>{data.trades} {data.trades === 1 ? "trade" : "trades"}</span>
                       <span>{Math.round((data.wins / data.trades) * 100)}% W</span>
                     </div>
                   </div>
@@ -140,7 +141,7 @@ export function CalendarView() {
           <div className="p-6 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-center">
             <div>
               <h3 className="text-lg font-bold text-white">{format(selectedDay, "EEEE, MMM d, yyyy")}</h3>
-              <p className="text-sm text-zinc-400">{selectedDayTrades.length} trades taken</p>
+              <p className="text-sm text-zinc-400">{selectedDayTrades.length} {selectedDayTrades.length === 1 ? "trade" : "trades"}</p>
             </div>
             <button onClick={() => setSelectedDay(null)} className="text-zinc-500 hover:text-white transition-colors">
               ✕
@@ -160,16 +161,16 @@ export function CalendarView() {
                       </span>
                       <span className="font-bold">{trade.symbol}</span>
                     </div>
-                    <div className={`font-mono font-bold ${trade.pnl >= 0 ? "text-green-500" : "text-pink-500"}`}>
-                      {trade.pnl >= 0 ? "+" : ""}${trade.pnl.toFixed(2)}
+                    <div className={`font-bold tabular-nums ${trade.status === "open" ? "text-yellow-500" : pnlClass(trade.pnl)}`}>
+                      {trade.status === "open" ? "Open" : usd(trade.pnl, { signed: true })}
                     </div>
                   </div>
                   
                   <div className="grid grid-cols-2 gap-2 text-xs text-zinc-400">
-                    <div>Entry: <span className="text-zinc-200">{trade.entry_price.toFixed(5)}</span></div>
-                    <div>Exit: <span className="text-zinc-200">{trade.exit_price != null ? trade.exit_price.toFixed(5) : "Open"}</span></div>
-                    <div>Duration: <span className="text-zinc-200">{trade.duration_hours?.toFixed(1) || "-"}h</span></div>
-                    <div>R-Mult: <span className="text-zinc-200">{trade.r_multiple?.toFixed(2) || "-"}R</span></div>
+                    <div>Entry: <span className="text-zinc-200 tabular-nums">{price(trade.entry_price)}</span></div>
+                    <div>Exit: <span className="text-zinc-200 tabular-nums">{trade.exit_price != null ? price(trade.exit_price) : "Open"}</span></div>
+                    <div>Duration: <span className="text-zinc-200">{duration(trade.duration_hours)}</span></div>
+                    <div>R-Mult: <span className="text-zinc-200 tabular-nums">{rMultiple(trade.r_multiple)}</span></div>
                   </div>
                   
                   {trade.setup && (

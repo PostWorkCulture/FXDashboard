@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 import { nextNewsEvent, type NewsEvent } from "@/lib/news";
 
 export function Header() {
-  const { filters, setFilters } = useData();
+  const { filters, setFilters, dataUpdated } = useData();
   const pathname = usePathname();
   const [currentDate, setCurrentDate] = useState<{ day: string; date: string } | null>(null);
   const [nextEvent, setNextEvent] = useState<NewsEvent | null | undefined>(undefined);
@@ -129,8 +129,16 @@ export function Header() {
       <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-sm shadow-xs">
         <Calendar size={15} className="text-zinc-400" />
         {currentDate ? (
-          <span className="text-zinc-300 font-medium">
+          <span className="text-zinc-300 font-medium whitespace-nowrap">
             <span className="text-white font-bold">{currentDate.day}</span>, {currentDate.date}
+            {dataUpdated && (
+              <span className="text-zinc-500 font-normal" title={`Trade data last exported ${dataUpdated.toLocaleString("en-GB")}`}>
+                {" · updated "}
+                {dataUpdated.toDateString() === new Date().toDateString()
+                  ? dataUpdated.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })
+                  : dataUpdated.toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+              </span>
+            )}
           </span>
         ) : (
           <span className="text-zinc-500 font-mono text-xs">--</span>

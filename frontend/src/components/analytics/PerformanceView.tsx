@@ -1,6 +1,7 @@
 "use client";
 
 import { useData } from "@/lib/data-context";
+import { STARTING_BALANCE, usd, pct } from "@/lib/format";
 import { useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -22,15 +23,15 @@ import {
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export function PerformanceView() {
-  const { filteredTrades, isLoading, filters, setFilters } = useData();
+  const { closedTrades: filteredTrades, isLoading, filters, setFilters } = useData();
   const router = useRouter();
 
   const data = useMemo(() => {
     if (filteredTrades.length === 0) return null;
 
     // Drawdown Calculation
-    let current_equity = 25000.0;
-    let peak_equity = 25000.0;
+    let current_equity = STARTING_BALANCE;
+    let peak_equity = STARTING_BALANCE;
     const drawdownCurve: any[] = [];
     
     [...filteredTrades]
@@ -65,8 +66,8 @@ export function PerformanceView() {
     // Win Rate by Side
     const longs = filteredTrades.filter(t => t.direction === "Long");
     const shorts = filteredTrades.filter(t => t.direction === "Short");
-    const longWin = longs.length > 0 ? (longs.filter(t => t.is_win).length / longs.length) * 100 : 0;
-    const shortWin = shorts.length > 0 ? (shorts.filter(t => t.is_win).length / shorts.length) * 100 : 0;
+    const longWin = longs.length > 0 ? (longs.filter(t => t.pnl > 0).length / longs.length) * 100 : 0;
+    const shortWin = shorts.length > 0 ? (shorts.filter(t => t.pnl > 0).length / shorts.length) * 100 : 0;
     
     const winRateData = [
       { name: "Longs", winRate: Number(longWin.toFixed(1)) },
@@ -122,7 +123,7 @@ export function PerformanceView() {
         <h2 className="text-lg font-semibold mb-6">Trades Taken per Month</h2>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data.tradesPerMonth} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+            <BarChart data={data.tradesPerMonth} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
               <XAxis dataKey="month" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
               <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
@@ -139,17 +140,17 @@ export function PerformanceView() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Hourly Performance */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-sm">
-          <h2 className="text-lg font-semibold mb-6">P&L by Hour of Day</h2>
+          <h2 className="text-lg font-semibold mb-6">P&L by Entry Hour <span className="text-sm font-normal text-zinc-500">(broker time)</span></h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.hourlyBreakdown} margin={{ top: 0, right: 0, left: -20, bottom: 0 }}>
+              <BarChart data={data.hourlyBreakdown} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="hour" stroke="#d4d4d8" fontSize={10} tickLine={false} axisLine={false} interval="preserveStartEnd" />
-                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => usd(val)} width={64} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                   cursor={{fill: '#27272a'}}
-                  formatter={(value: any) => `$${value.toFixed(2)}`}
+                  formatter={(value: any) => [usd(value, { signed: true }), "P&L"]}
                 />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
                   {data.hourlyBreakdown.map((entry, index) => (
@@ -168,7 +169,7 @@ export function PerformanceView() {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={data.dowBreakdown}
-                margin={{ top: 0, right: 0, left: -20, bottom: 0 }}
+                margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
                 onClick={(e: any) => {
                   const p = e?.activePayload?.[0]?.payload;
                   if (p?.dayIndex !== undefined) {
@@ -179,11 +180,11 @@ export function PerformanceView() {
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
                 <XAxis dataKey="name" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
+                <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => usd(val)} width={64} />
                 <Tooltip
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                   cursor={{ fill: '#27272a' }}
-                  formatter={(value: any) => `$${value.toFixed(2)}`}
+                  formatter={(value: any) => [usd(value, { signed: true }), "P&L"]}
                 />
                 <Bar dataKey="pnl" radius={[4, 4, 0, 0]} className="cursor-pointer">
                   {data.dowBreakdown.map((entry, index) => (
@@ -207,14 +208,14 @@ export function PerformanceView() {
           <h2 className="text-lg font-semibold mb-6">Win Rate by Side (%)</h2>
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data.winRateData} margin={{ top: 0, right: 0, left: -20, bottom: 0 }} layout="vertical">
+              <BarChart data={data.winRateData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#27272a" horizontal={false} />
                 <XAxis type="number" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} domain={[0, 100]} />
                 <YAxis dataKey="name" type="category" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} width={60} />
                 <Tooltip 
                   contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                   cursor={{fill: '#27272a'}}
-                  formatter={(value: any) => `${value}%`}
+                  formatter={(value: any) => [pct(value), "Win rate"]}
                 />
                 <Bar dataKey="winRate" radius={[0, 4, 4, 0]} barSize={40}>
                   <Cell fill="#3b82f6" />
@@ -235,7 +236,7 @@ export function PerformanceView() {
                   <div className="text-sm text-zinc-500">{t.entry_time.split(" ")[0]}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-green-500 font-mono">+${t.pnl.toFixed(2)}</div>
+                  <div className="text-lg font-bold text-green-500 tabular-nums">{usd(t.pnl, { signed: true })}</div>
                   <div className="text-xs text-zinc-500">{t.direction}</div>
                 </div>
               </div>
@@ -254,7 +255,7 @@ export function PerformanceView() {
                   <div className="text-sm text-zinc-500">{t.entry_time.split(" ")[0]}</div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-pink-500 font-mono">-${Math.abs(t.pnl).toFixed(2)}</div>
+                  <div className="text-lg font-bold text-pink-500 tabular-nums">{usd(t.pnl, { signed: true })}</div>
                   <div className="text-xs text-zinc-500">{t.direction}</div>
                 </div>
               </div>
@@ -269,7 +270,7 @@ export function PerformanceView() {
         <h2 className="text-lg font-semibold mb-6">Drawdown (%)</h2>
         <div className="h-80 w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data.drawdownCurve} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+            <AreaChart data={data.drawdownCurve} margin={{ top: 10, right: 0, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorDd" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ec4899" stopOpacity={0.3}/>
@@ -278,11 +279,11 @@ export function PerformanceView() {
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
               <XAxis dataKey="date" stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} minTickGap={30} />
-              <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
+              <YAxis stroke="#d4d4d8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => pct(val)} width={56} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', borderRadius: '8px' }}
                 itemStyle={{ color: '#ec4899' }}
-                formatter={(value: any) => `${value}%`}
+                formatter={(value: any) => [pct(value), "Drawdown"]}
               />
               <Area type="monotone" dataKey="drawdown" stroke="#ec4899" strokeWidth={2} fillOpacity={1} fill="url(#colorDd)" />
             </AreaChart>
